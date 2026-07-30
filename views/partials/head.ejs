@@ -1,0 +1,22 @@
+<script>
+  // Se ejecuta lo antes posible para fijar el tema (claro/oscuro) antes de
+  // la primera pintura y evitar el parpadeo de tema incorrecto.
+  (function () {
+    try {
+      var guardado = localStorage.getItem('tema');
+      var tema = guardado || ((window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) ? 'oscuro' : 'claro');
+      document.documentElement.setAttribute('data-tema', tema);
+    } catch (e) {}
+  })();
+</script>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<meta name="csrf-token" content="<%= typeof csrfToken !== 'undefined' ? csrfToken : '' %>" />
+<meta name="theme-color" content="#0b1120" />
+<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600;700&display=swap" rel="stylesheet" />
+<script src="https://unpkg.com/lucide@latest"></script>
+<link rel="stylesheet" href="/css/style.css" />
+<title><%= typeof titulo !== 'undefined' ? titulo + ' · Carnet DGT Agudelian' : 'Carnet DGT Agudelian' %></title>

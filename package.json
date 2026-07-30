@@ -1,0 +1,30 @@
+{
+  "name": "carnet-dgt-agudelian",
+  "version": "1.0.0",
+  "description": "Aplicación web local para practicar el examen teórico de la DGT (carnet B, con soporte para A1/D)",
+  "main": "server.js",
+  "type": "commonjs",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js",
+    "db:init": "node src/db/init-db.js",
+    "db:seed:temas": "node scripts/seed-temas.js",
+    "db:seed:sample": "node scripts/seed-sample-data.js",
+    "db:reset": "node src/db/init-db.js --force && node scripts/seed-temas.js && node scripts/seed-sample-data.js",
+    "db:seed:full": "node src/db/init-db.js && node scripts/seed-temas.js && node scripts/descargar-banco-completo.js && node scripts/clasificar-preguntas.js --carnet B && node scripts/generar-bloques-tema.js --carnet B && node scripts/generar-examenes-oficiales.js --carnet B --cantidad 40",
+    "import": "node scripts/import-from-anki-json.js",
+    "import:completo": "node scripts/descargar-banco-completo.js",
+    "clasificar:temas": "node scripts/clasificar-preguntas.js",
+    "generar:bloques": "node scripts/generar-bloques-tema.js",
+    "generar:simulacros": "node scripts/generar-examenes-oficiales.js"
+  },
+  "license": "MIT",
+  "dependencies": {
+    "better-sqlite3": "^12.4.1",
+    "bcryptjs": "^2.4.3",
+    "dotenv": "^16.4.5",
+    "ejs": "^3.1.10",
+    "express": "^4.19.2",
+    "express-session": "^1.18.0"
+  }
+}

@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="es">
+<head><%- include('partials/head', { titulo: nota ? 'Editar nota' : 'Nueva nota' }) %></head>
+<body>
+  <%- include('partials/nav') %>
+  <div class="container">
+    <h1><%= nota ? 'Editar nota' : 'Nueva nota' %></h1>
+    <% if (error) { %><div class="errores"><%= error %></div><% } %>
+
+    <form method="POST" action="<%= nota ? `/cuaderno/${nota.id}/editar` : '/cuaderno/nueva' %>" class="card">
+      <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
+
+      <% if (pregunta) { %>
+        <input type="hidden" name="pregunta_id" value="<%= pregunta.id %>" />
+        <div class="explicacion-box mt-1" style="margin-bottom:16px;">
+          <strong>Vinculada a la pregunta:</strong> <%= pregunta.enunciado %>
+        </div>
+      <% } %>
+
+      <div class="campo" style="margin-bottom:14px;">
+        <label for="titulo" style="font-weight:600; font-size:0.85rem; display:block; margin-bottom:5px;">Título</label>
+        <input type="text" id="titulo" name="titulo" value="<%= nota ? nota.titulo : '' %>" placeholder="Título breve (opcional)"
+               style="width:100%; padding:11px 12px; border:1.5px solid var(--border); border-radius:8px; font-size:16px;" />
+      </div>
+
+      <div class="campo" style="margin-bottom:14px;">
+        <label for="contenido" style="font-weight:600; font-size:0.85rem; display:block; margin-bottom:5px;">Contenido</label>
+        <textarea id="contenido" name="contenido" rows="8" required placeholder="Escribe tu nota..."
+                  style="width:100%; padding:11px 12px; border:1.5px solid var(--border); border-radius:8px; font-size:16px; font-family:inherit; resize:vertical;"><%= nota ? nota.contenido : '' %></textarea>
+      </div>
+
+      <div class="grid" style="margin-bottom:14px;">
+        <div class="campo">
+          <label for="tema_id" style="font-weight:600; font-size:0.85rem; display:block; margin-bottom:5px;">Tema (opcional)</label>
+          <select id="tema_id" name="tema_id">
+            <option value="">Sin tema</option>
+            <% temas.forEach(function(t){ %>
+              <option value="<%= t.id %>" <%= (nota && nota.tema_id === t.id) ? 'selected' : '' %>>Tema <%= t.numero %> — <%= t.nombre %></option>
+            <% }) %>
+          </select>
+        </div>
+        <div class="campo">
+          <label for="categoria" style="font-weight:600; font-size:0.85rem; display:block; margin-bottom:5px;">Categoría (opcional)</label>
+          <input type="text" id="categoria" name="categoria" value="<%= nota ? (nota.categoria || '') : '' %>" placeholder="p. ej. Dudas, Repaso..."
+                 style="width:100%; padding:11px 12px; border:1.5px solid var(--border); border-radius:8px; font-size:16px;" />
+        </div>
+      </div>
+
+      <div class="campo" style="margin-bottom:18px;">
+        <label for="etiquetas" style="font-weight:600; font-size:0.85rem; display:block; margin-bottom:5px;">Etiquetas (separadas por comas)</label>
+        <input type="text" id="etiquetas" name="etiquetas" value="<%= nota ? (nota.etiquetas || '') : '' %>" placeholder="p. ej. señales, prioridad"
+               style="width:100%; padding:11px 12px; border:1.5px solid var(--border); border-radius:8px; font-size:16px;" />
+      </div>
+
+      <div class="flex-between">
+        <a href="/cuaderno" class="btn secundario">Cancelar</a>
+        <button type="submit" class="btn"><i data-lucide="save" class="icon"></i> Guardar nota</button>
+      </div>
+    </form>
+  </div>
+</body>
+</html>

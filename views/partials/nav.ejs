@@ -1,0 +1,71 @@
+<header class="navbar">
+  <a class="brand" href="/"><span class="badge-sign">B</span> Carnet DGT Agudelian</a>
+  <% if (user) { %>
+    <nav class="nav-desktop">
+      <a href="/" class="<%= rutaActual === '/' ? 'activo' : '' %>"><i data-lucide="home" class="icon"></i> Inicio</a>
+      <a href="/test/nuevo" class="<%= rutaActual && rutaActual.startsWith('/test/nuevo') ? 'activo' : '' %>"><i data-lucide="square-pen" class="icon"></i> Nuevo test</a>
+      <a href="/cuaderno" class="<%= rutaActual && rutaActual.startsWith('/cuaderno') ? 'activo' : '' %>"><i data-lucide="notebook-text" class="icon"></i> Cuaderno</a>
+      <a href="/manual" class="<%= rutaActual === '/manual' ? 'activo' : '' %>"><i data-lucide="book-open" class="icon"></i> Manual</a>
+      <a href="/stats" class="<%= rutaActual === '/stats' ? 'activo' : '' %>"><i data-lucide="bar-chart-3" class="icon"></i> Estadísticas</a>
+    </nav>
+    <div class="nav-right">
+      <button type="button" class="theme-toggle" data-theme-toggle aria-label="Cambiar tema claro/oscuro">
+        <i data-lucide="sun" class="icon icono-sol"></i>
+        <i data-lucide="moon" class="icon icono-luna"></i>
+      </button>
+      <div class="nav-desktop">
+        <span class="avatar" title="<%= user.username %>"><%= user.username.charAt(0).toUpperCase() %></span>
+        <form method="POST" action="/logout">
+          <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
+          <button type="submit" class="link-button"><i data-lucide="log-out" class="icon icon-sm"></i> Salir</button>
+        </form>
+      </div>
+      <button type="button" class="nav-toggle" id="btn-nav-toggle" aria-label="Abrir menú" aria-expanded="false">
+        <i data-lucide="menu" class="icon"></i>
+      </button>
+    </div>
+  <% } else { %>
+    <button type="button" class="theme-toggle" data-theme-toggle aria-label="Cambiar tema claro/oscuro">
+      <i data-lucide="sun" class="icon icono-sol"></i>
+      <i data-lucide="moon" class="icon icono-luna"></i>
+    </button>
+  <% } %>
+</header>
+<% if (user) { %>
+  <nav class="nav-mobile" id="nav-mobile">
+    <a href="/"><i data-lucide="home" class="icon"></i> Inicio</a>
+    <a href="/test/nuevo"><i data-lucide="square-pen" class="icon"></i> Nuevo test</a>
+    <a href="/cuaderno"><i data-lucide="notebook-text" class="icon"></i> Cuaderno</a>
+    <a href="/manual"><i data-lucide="book-open" class="icon"></i> Manual</a>
+    <a href="/stats"><i data-lucide="bar-chart-3" class="icon"></i> Estadísticas</a>
+    <form method="POST" action="/logout">
+      <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
+      <button type="submit"><i data-lucide="log-out" class="icon"></i> Cerrar sesión (<%= user.username %>)</button>
+    </form>
+  </nav>
+<% } %>
+<script>
+  (function () {
+    var btnNav = document.getElementById('btn-nav-toggle');
+    var menu = document.getElementById('nav-mobile');
+    if (btnNav && menu) {
+      btnNav.addEventListener('click', function () {
+        var abierto = menu.classList.toggle('abierto');
+        btnNav.setAttribute('aria-expanded', abierto ? 'true' : 'false');
+      });
+    }
+
+    document.querySelectorAll('[data-theme-toggle]').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        var actual = document.documentElement.getAttribute('data-tema');
+        var nuevo = actual === 'oscuro' ? 'claro' : 'oscuro';
+        document.documentElement.setAttribute('data-tema', nuevo);
+        try { localStorage.setItem('tema', nuevo); } catch (e) {}
+      });
+    });
+
+    document.addEventListener('DOMContentLoaded', function () {
+      if (window.lucide) lucide.createIcons();
+    });
+  })();
+</script>

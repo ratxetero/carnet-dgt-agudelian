@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="es">
+<head><%- include('partials/head', { titulo: 'Inicio' }) %></head>
+<body>
+  <%- include('partials/nav') %>
+  <div class="container-ancho">
+
+    <div class="manual-hero">
+      <div>
+        <h1>Hola, <%= user.username %></h1>
+        <p>Sigue practicando para el examen teórico de la DGT (carnet B).</p>
+      </div>
+      <div class="acciones-manual">
+        <a href="/test/nuevo" class="btn">Empezar un test</a>
+      </div>
+    </div>
+
+    <div class="grid">
+      <div class="stat-box">
+        <div class="icono"><i data-lucide="clipboard-check" class="icon"></i></div>
+        <div class="valor"><%= resumen.totalTests %></div>
+        <div class="etiqueta">Tests realizados</div>
+      </div>
+      <div class="stat-box">
+        <div class="icono"><i data-lucide="target" class="icon"></i></div>
+        <div class="valor"><%= resumen.porcentajeAcierto %>%</div>
+        <div class="etiqueta">Acierto global</div>
+      </div>
+      <div class="stat-box">
+        <div class="icono" style="background:var(--success-100); color:var(--success);"><i data-lucide="check-circle-2" class="icon"></i></div>
+        <div class="valor"><%= resumen.totalAprobados %></div>
+        <div class="etiqueta">Aprobados</div>
+      </div>
+      <div class="stat-box">
+        <div class="icono" style="background:var(--danger-100); color:var(--danger);"><i data-lucide="x-circle" class="icon"></i></div>
+        <div class="valor"><%= resumen.totalSuspensos %></div>
+        <div class="etiqueta">Suspensos</div>
+      </div>
+    </div>
+
+    <% if (totalFallos > 0) { %>
+      <div class="card mt-2" style="border-left:3px solid var(--warning); display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:14px;">
+        <div class="flex-icon">
+          <i data-lucide="bookmark" class="icon" style="color:var(--warning);"></i>
+          <div>
+            <h3 style="margin:0 0 4px;">Tienes <%= totalFallos %> pregunta<%= totalFallos===1?'':'s' %> pendiente<%= totalFallos===1?'':'s' %> de repasar</h3>
+            <p class="text-muted" style="margin:0;">Repasar los fallos es la forma más rápida de subir nota.</p>
+          </div>
+        </div>
+        <a href="/test/nuevo" class="btn secundario">Repasar ahora</a>
+      </div>
+    <% } %>
+
+    <div class="grid mt-2">
+      <a href="/test/nuevo" class="card" style="text-decoration:none; color:inherit; display:block;">
+        <div class="icono-modo mt-1" style="margin-bottom:10px;"><i data-lucide="square-pen" class="icon"></i></div>
+        <h3 style="margin:0 0 4px;">Nuevo test</h3>
+        <p class="text-muted" style="margin:0;">Aleatorio, por tema, simulacro o repaso de fallos.</p>
+      </a>
+      <a href="/cuaderno" class="card" style="text-decoration:none; color:inherit; display:block;">
+        <div class="icono-modo mt-1" style="margin-bottom:10px;"><i data-lucide="notebook-text" class="icon"></i></div>
+        <h3 style="margin:0 0 4px;">Cuaderno</h3>
+        <p class="text-muted" style="margin:0;">Tus notas de estudio, en un solo lugar.</p>
+      </a>
+      <a href="/manual" class="card" style="text-decoration:none; color:inherit; display:block;">
+        <div class="icono-modo mt-1" style="margin-bottom:10px;"><i data-lucide="book-open" class="icon"></i></div>
+        <h3 style="margin:0 0 4px;">Manual</h3>
+        <p class="text-muted" style="margin:0;">Consulta el manual teórico sin salir de la app.</p>
+      </a>
+    </div>
+
+    <div class="card mt-2">
+      <h2>Últimos resultados</h2>
+      <% if (!resumen.ultimos.length) { %>
+        <div class="estado-vacio">
+          <div class="icono-vacio"><i data-lucide="car" class="icon-lg"></i></div>
+          <h3>Todavía no has hecho ningún test</h3>
+          <p>Empieza con un test aleatorio para ver dónde estás y qué repasar.</p>
+          <a href="/test/nuevo" class="btn">Empezar ahora</a>
+        </div>
+      <% } else { %>
+        <div style="overflow-x:auto;">
+        <table class="tabla-simple">
+          <thead>
+            <tr><th>Fecha</th><th>Tipo</th><th>Preguntas</th><th>Aciertos</th><th>Fallos</th><th>Resultado</th></tr>
+          </thead>
+          <tbody>
+            <% resumen.ultimos.forEach(function(t){ %>
+              <tr>
+                <td><%= t.finalizado_en %></td>
+                <td><%= t.tipo %></td>
+                <td><%= t.num_preguntas %></td>
+                <td><%= t.aciertos %></td>
+                <td><%= t.fallos %></td>
+                <td>
+                  <% if (t.aprobado) { %><span class="badge ok"><i data-lucide="check" class="icon-sm"></i> Apto</span>
+                  <% } else { %><span class="badge fail"><i data-lucide="x" class="icon-sm"></i> No apto</span><% } %>
+                </td>
+              </tr>
+            <% }) %>
+          </tbody>
+        </table>
+        </div>
+        <p class="mt-2"><a href="/stats" class="flex-icon" style="display:inline-flex;">Ver estadísticas completas <i data-lucide="arrow-right" class="icon-sm"></i></a></p>
+      <% } %>
+    </div>
+
+    <div class="card mt-2">
+      <h2>Simulacros disponibles</h2>
+      <% if (!examenes.length) { %>
+        <p class="text-muted">Aún no hay simulacros cargados. Usa <code>npm run db:seed:full</code> o el script de generación de simulacros.</p>
+      <% } else { %>
+        <p class="text-muted mt-1"><%= examenes.length %> simulacros de 30 preguntas reales, en formato de examen oficial DGT.</p>
+      <% } %>
+    </div>
+  </div>
+</body>
+</html>

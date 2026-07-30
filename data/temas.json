@@ -1,0 +1,126 @@
+[
+  {
+    "numero": 1, "carnet": "B", "nombre": "Definiciones",
+    "descripcion": "Definiciones relativas al factor humano, al vehículo y a la vía.",
+    "subtemas": [
+      { "numero": "1.1", "nombre": "Definiciones relativas al factor humano" },
+      { "numero": "1.2", "nombre": "Definiciones relativas al factor vehículo" },
+      { "numero": "1.3", "nombre": "Definiciones relativas al factor vía" }
+    ]
+  },
+  {
+    "numero": 2, "carnet": "B", "nombre": "La Vía",
+    "descripcion": "Normas de comportamiento y circulación, carriles, arcén, distancias, peatones, animales, velocidad y prioridad.",
+    "subtemas": [
+      { "numero": "2.1", "nombre": "Normas generales de comportamiento" },
+      { "numero": "2.2", "nombre": "Normas de circulación" },
+      { "numero": "2.3", "nombre": "Tipos de carriles" },
+      { "numero": "2.4", "nombre": "Utilización del arcén" },
+      { "numero": "2.5", "nombre": "Distancia de seguridad entre vehículos" },
+      { "numero": "2.6", "nombre": "Circulación de peatones" },
+      { "numero": "2.7", "nombre": "Circulación de animales" },
+      { "numero": "2.8", "nombre": "La velocidad" },
+      { "numero": "2.9", "nombre": "La prioridad" }
+    ]
+  },
+  {
+    "numero": 3, "carnet": "B", "nombre": "El Alumbrado",
+    "descripcion": "Funciones y tipos de luces del vehículo: para ser vistos, para ver, para señalizar y otras luces.",
+    "subtemas": [
+      { "numero": "3.1", "nombre": "Funciones de los sistemas de alumbrado" },
+      { "numero": "3.2", "nombre": "Luces para ser vistos" },
+      { "numero": "3.3", "nombre": "Luces para ver" },
+      { "numero": "3.4", "nombre": "Luces para señalizar" },
+      { "numero": "3.5", "nombre": "Otras luces" }
+    ]
+  },
+  {
+    "numero": 4, "carnet": "B", "nombre": "Maniobras",
+    "descripcion": "Incorporación, desplazamiento lateral, adelantamiento, cambios de dirección y de sentido, e inmovilizaciones.",
+    "subtemas": [
+      { "numero": "4.1", "nombre": "Generalidades" },
+      { "numero": "4.2", "nombre": "Regla de seguridad" },
+      { "numero": "4.3", "nombre": "Incorporación a la circulación" },
+      { "numero": "4.4", "nombre": "Desplazamiento lateral" },
+      { "numero": "4.5", "nombre": "Adelantamiento" },
+      { "numero": "4.6", "nombre": "Cambio de dirección" },
+      { "numero": "4.7", "nombre": "Cambio de sentido" },
+      { "numero": "4.8", "nombre": "Inmovilizaciones" }
+    ]
+  },
+  {
+    "numero": 5, "carnet": "B", "nombre": "Señalización",
+    "descripcion": "Agentes, señales circunstanciales, semáforos, señales verticales y marcas viales.",
+    "subtemas": [
+      { "numero": "5.1", "nombre": "Generalidades" },
+      { "numero": "5.2", "nombre": "Señales de los agentes" },
+      { "numero": "5.3", "nombre": "Señales circunstanciales y de balizamiento" },
+      { "numero": "5.4", "nombre": "Semáforos" },
+      { "numero": "5.5", "nombre": "Semáforos para peatones" },
+      { "numero": "5.6", "nombre": "Señales verticales" },
+      { "numero": "5.7", "nombre": "Marcas viales" }
+    ]
+  },
+  {
+    "numero": 6, "carnet": "B", "nombre": "Transporte",
+    "descripcion": "Transporte de personas, de mercancías y señales en los vehículos.",
+    "subtemas": [
+      { "numero": "6.1", "nombre": "Transporte de personas" },
+      { "numero": "6.2", "nombre": "Transporte de mercancías" },
+      { "numero": "6.3", "nombre": "Señales en los vehículos" }
+    ]
+  },
+  {
+    "numero": 7, "carnet": "B", "nombre": "Técnicas de conducción",
+    "descripcion": "Conducción preventiva y conducción eficiente.",
+    "subtemas": [
+      { "numero": "7.1", "nombre": "Conducción preventiva" },
+      { "numero": "7.2", "nombre": "Conducción eficiente" }
+    ]
+  },
+  {
+    "numero": 8, "carnet": "B", "nombre": "Seguridad vial",
+    "descripcion": "Los accidentes y los factores humano, vehículo y vía/entorno.",
+    "subtemas": [
+      { "numero": "8.1", "nombre": "Los accidentes" },
+      { "numero": "8.2", "nombre": "Factor humano" },
+      { "numero": "8.3", "nombre": "Factor vehículo" },
+      { "numero": "8.4", "nombre": "Factor vía y su entorno" }
+    ]
+  },
+  {
+    "numero": 9, "carnet": "B", "nombre": "Mantenimiento del vehículo",
+    "descripcion": "Motor, sistema eléctrico, sistema de transmisión, accesorios y repuestos obligatorios.",
+    "subtemas": [
+      { "numero": "9.1", "nombre": "Motor" },
+      { "numero": "9.2", "nombre": "Sistema eléctrico" },
+      { "numero": "9.3", "nombre": "Sistema de transmisión" },
+      { "numero": "9.4", "nombre": "Accesorios y repuestos obligatorios" }
+    ]
+  },
+  {
+    "numero": 10, "carnet": "B", "nombre": "Comportamiento en caso de accidente",
+    "descripcion": "Obligación de socorrer, orden de actuación, movilización de heridos y botiquín.",
+    "subtemas": [
+      { "numero": "10.1", "nombre": "Obligación de socorrer" },
+      { "numero": "10.2", "nombre": "Orden de actuación" },
+      { "numero": "10.3", "nombre": "Movilización de los heridos" },
+      { "numero": "10.4", "nombre": "Orden de actuación con el herido" },
+      { "numero": "10.5", "nombre": "Botiquín de primeros auxilios" }
+    ]
+  },
+  {
+    "numero": 11, "carnet": "B", "nombre": "Documentación",
+    "descripcion": "Documentación del conductor, del vehículo y responsabilidad de las infracciones.",
+    "subtemas": [
+      { "numero": "11.1", "nombre": "Documentación del conductor" },
+      { "numero": "11.2", "nombre": "Documentación del vehículo" },
+      { "numero": "11.3", "nombre": "Responsabilidad de las infracciones" }
+    ]
+  },
+  {
+    "numero": 0, "carnet": "B", "nombre": "Sin categorizar",
+    "descripcion": "Preguntas que no encajan con claridad en ninguno de los 11 temas del manual. Puedes hacer test de ellas igual que con cualquier otro tema.",
+    "subtemas": []
+  }
+]

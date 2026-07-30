@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="es">
+<head><%- include('partials/head', { titulo: 'Test en curso' }) %></head>
+<body>
+  <%- include('partials/nav') %>
+  <div class="container">
+    <div class="flex-between">
+      <h1 id="titulo-test">Test</h1>
+      <span class="text-muted" id="contador-preguntas"></span>
+    </div>
+    <div class="progreso-bar"><div class="relleno" id="barra-progreso" style="width:0%"></div></div>
+
+    <div class="card" id="zona-pregunta"></div>
+
+    <div class="acciones-test">
+      <button class="btn secundario" id="btn-anterior"><i data-lucide="arrow-left" class="icon"></i> Anterior</button>
+      <button class="btn" id="btn-siguiente">Siguiente <i data-lucide="arrow-right" class="icon"></i></button>
+    </div>
+  </div>
+
+  <!-- Modal: Consulta a un experto -->
+  <div class="modal-overlay" id="modal-experto">
+    <div class="modal-chat">
+      <div class="modal-chat-header">
+        <h3><i data-lucide="message-circle" class="icon"></i> Consulta a un experto</h3>
+        <button type="button" id="btn-cerrar-experto" aria-label="Cerrar"><i data-lucide="x" class="icon"></i></button>
+      </div>
+      <div class="modal-chat-mensajes" id="mensajes-experto">
+        <div class="mensaje-chat sistema">Pregúntale lo que quieras sobre esta pregunta. La conversación se reinicia al cambiar de pregunta.</div>
+      </div>
+      <form class="modal-chat-form" id="form-experto">
+        <textarea id="input-experto" rows="1" placeholder="Escribe tu pregunta..." maxlength="1000"></textarea>
+        <button type="submit" class="btn" id="btn-enviar-experto" aria-label="Enviar"><i data-lucide="send" class="icon"></i></button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal: Guardar nota rápida -->
+  <div class="modal-overlay" id="modal-nota-rapida">
+    <div class="modal-chat" style="max-width:480px;">
+      <div class="modal-chat-header">
+        <h3><i data-lucide="sticky-note" class="icon"></i> Guardar en notas</h3>
+        <button type="button" id="btn-cerrar-nota" aria-label="Cerrar"><i data-lucide="x" class="icon"></i></button>
+      </div>
+      <div style="padding:16px 20px;">
+        <textarea id="input-nota-rapida" rows="6" placeholder="Escribe tu nota sobre esta pregunta..."
+                  style="width:100%; padding:11px 12px; border:1.5px solid var(--border); border-radius:8px; font-family:inherit; font-size:16px; resize:vertical; background:var(--surface); color:var(--ink);"></textarea>
+        <div class="flex-between mt-2">
+          <span class="text-muted" id="estado-nota-rapida" style="font-size:0.85rem;"></span>
+          <button type="button" class="btn" id="btn-guardar-nota-rapida">Guardar nota</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    window.__TEST_ID__ = <%= test.id %>;
+    window.__PREGUNTAS__ = <%- preguntasJson %>;
+  </script>
+  <script src="/js/experto.js"></script>
+  <script src="/js/test.js"></script>
+</body>
+</html>

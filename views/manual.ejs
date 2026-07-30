@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="es">
+<head><%- include('partials/head', { titulo: 'Manual' }) %></head>
+<body>
+  <%- include('partials/nav') %>
+  <div class="container-ancho">
+
+    <div class="manual-hero">
+      <div style="display:flex; align-items:flex-start; gap:16px;">
+        <div class="icono-manual"><i data-lucide="book-open" class="icon-lg"></i></div>
+        <div>
+          <h1>Manual teórico</h1>
+          <p>Consulta el manual completo del carnet B sin salir de la aplicación<% if (tamanoMB) { %> · <%= tamanoMB %> MB<% } %></p>
+        </div>
+      </div>
+      <% if (existe) { %>
+        <div class="acciones-manual">
+          <a href="<%= urlPdf %>" target="_blank" rel="noopener" class="btn"><i data-lucide="maximize-2" class="icon"></i> Abrir a pantalla completa</a>
+          <a href="/manual/descargar" class="btn fantasma"><i data-lucide="download" class="icon"></i> Descargar</a>
+        </div>
+      <% } %>
+    </div>
+
+    <% if (!existe) { %>
+      <div class="estado-vacio">
+        <div class="icono-vacio"><i data-lucide="file-x" class="icon-lg"></i></div>
+        <h3>Todavía no hay un manual cargado</h3>
+        <p>
+          Coloca un archivo PDF en <code>public/pdf/manual.pdf</code> (sustituyendo el que hubiera)
+          y recarga esta página. No es necesario cambiar ningún código.
+        </p>
+      </div>
+    <% } else { %>
+
+      <!-- Escritorio/tablet: visor embebido -->
+      <div class="visor-pdf-wrap">
+        <iframe src="<%= urlPdf %>" title="Manual teórico DGT" loading="lazy"></iframe>
+      </div>
+      <p class="text-muted mt-2" style="display:none;" id="aviso-visor-desktop">
+        ¿No se ve bien el visor? <a href="<%= urlPdf %>" target="_blank" rel="noopener">Ábrelo a pantalla completa</a> o usa el botón de descargar de arriba.
+      </p>
+
+      <!-- Móvil: acceso directo, sin depender del iframe (poco fiable en iOS Safari) -->
+      <div class="manual-solo-movil">
+        <div class="card" style="text-align:center;">
+          <div class="icono-vacio" style="margin:0 auto 14px;"><i data-lucide="smartphone" class="icon-lg"></i></div>
+          <h3>Léelo a pantalla completa</h3>
+          <p class="text-muted">
+            En el móvil, el manual se abre en el visor de PDF nativo de tu navegador
+            (más cómodo y fiable que un visor embebido). Desde ahí también puedes
+            buscar texto, hacer zoom y guardarlo.
+          </p>
+          <a href="<%= urlPdf %>" target="_blank" rel="noopener" class="btn grande">Abrir manual</a>
+          <a href="/manual/descargar" class="btn secundario grande mt-1" style="display:block;">Descargar PDF</a>
+        </div>
+      </div>
+    <% } %>
+  </div>
+
+  <script>
+    (function () {
+      var aviso = document.getElementById('aviso-visor-desktop');
+      if (aviso) setTimeout(function () { aviso.style.display = 'block'; }, 2500);
+    })();
+  </script>
+</body>
+</html>

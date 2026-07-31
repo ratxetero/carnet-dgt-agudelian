@@ -1,9 +1,9 @@
 <header class="navbar">
-  <a class="brand" href="/"><span class="badge-sign">B</span> Carnet DGT Agudelian</a>
+  <a class="brand" href="/"><img src="/images/marca/logo-gato.png" alt="Logo" class="marca-img" /> Carnet</a>
   <% if (user) { %>
     <nav class="nav-desktop">
       <a href="/" class="<%= rutaActual === '/' ? 'activo' : '' %>"><i data-lucide="home" class="icon"></i> Inicio</a>
-      <a href="/test/nuevo" class="<%= rutaActual && rutaActual.startsWith('/test/nuevo') ? 'activo' : '' %>"><i data-lucide="square-pen" class="icon"></i> Nuevo test</a>
+      <a href="/test/nuevo" class="<%= rutaActual && rutaActual.startsWith('/test/nuevo') ? 'activo' : '' %>"><i data-lucide="square-pen" class="icon"></i> Test</a>
       <a href="/cuaderno" class="<%= rutaActual && rutaActual.startsWith('/cuaderno') ? 'activo' : '' %>"><i data-lucide="notebook-text" class="icon"></i> Cuaderno</a>
       <a href="/manual" class="<%= rutaActual === '/manual' ? 'activo' : '' %>"><i data-lucide="book-open" class="icon"></i> Manual</a>
       <a href="/stats" class="<%= rutaActual === '/stats' ? 'activo' : '' %>"><i data-lucide="bar-chart-3" class="icon"></i> Estadísticas</a>
@@ -17,7 +17,7 @@
         <span class="avatar" title="<%= user.username %>"><%= user.username.charAt(0).toUpperCase() %></span>
         <form method="POST" action="/logout">
           <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
-          <button type="submit" class="link-button"><i data-lucide="log-out" class="icon icon-sm"></i> Salir</button>
+          <button type="submit" class="link-button"><i data-lucide="log-out" class="icon icon-sm"></i></button>
         </form>
       </div>
       <button type="button" class="nav-toggle" id="btn-nav-toggle" aria-label="Abrir menú" aria-expanded="false">
@@ -54,7 +54,6 @@
         btnNav.setAttribute('aria-expanded', abierto ? 'true' : 'false');
       });
     }
-
     document.querySelectorAll('[data-theme-toggle]').forEach(function (btn) {
       btn.addEventListener('click', function () {
         var actual = document.documentElement.getAttribute('data-tema');
@@ -63,7 +62,6 @@
         try { localStorage.setItem('tema', nuevo); } catch (e) {}
       });
     });
-
     document.addEventListener('DOMContentLoaded', function () {
       if (window.lucide) lucide.createIcons();
     });

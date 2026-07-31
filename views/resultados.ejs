@@ -68,7 +68,7 @@
           <ul style="list-style:none; padding:0;">
             <% p.opciones.forEach(function(op){ %>
               <li style="padding:9px 11px; border-radius:8px; margin-bottom:6px;
-                background: <%= op.es_correcta ? 'var(--success-100)' : (op.id === p.opcionElegidaId ? 'var(--danger-100)' : 'var(--surface)') %>;
+                background: <%= op.es_correcta ? 'var(--success-soft)' : (op.id === p.opcionElegidaId ? 'var(--danger-soft)' : 'var(--surface)') %>;
                 border: 1px solid var(--border);">
                 <div class="flex-icon"><%= op.texto %>
                   <% if (op.es_correcta) { %><i data-lucide="check" class="icon-sm" style="color:var(--success);"></i>

@@ -1,29 +1,16 @@
 // src/services/backupService.js
 // ---------------------------------------------------------------------------
-// Copia de seguridad automática de la base de datos SQLite en Turso
+// Copia de seguridad automática de archivos SQLite en Turso
 // (https://turso.tech — capa gratuita real: 5 GB, sin tarjeta, no caduca).
 //
-// POR QUÉ EXISTE ESTO
-// En hostings gratuitos como Render, el disco NO es persistente: cada
-// redeploy (incluso solo cambiar una variable de entorno) borra el archivo
-// de base de datos local y lo sustituye por el que está en el repositorio
-// de git. Reescribir toda la app para usar Turso como base de datos "en
-// vivo" habría significado convertir TODO el acceso a datos de síncrono
-// (better-sqlite3) a asíncrono (libSQL), tocando prácticamente cada
-// servicio y ruta — mucho riesgo de romper algo que ya funciona.
-//
-// En su lugar, este servicio usa Turso solo como "almacén" del archivo de
-// base de datos completo (en un BLOB), sin cambiar ni una línea del resto
-// de la aplicación:
-//   - Al arrancar el servidor: si hay una copia en Turso, la descarga y la
-//     escribe en el disco local ANTES de que better-sqlite3 abra el archivo.
-//   - Mientras la app corre: sube una copia nueva cada pocos minutos.
-//   - Al recibir la señal de apagado (Render la envía antes de cada
-//     redeploy/reinicio): hace una última copia de seguridad justo a
-//     tiempo, para no perder nada.
+// Respalda DOS archivos:
+//   - la base de datos principal (preguntas, usuarios, notas, tests...)
+//   - la base de datos de sesiones de login (para que un reinicio del
+//     proceso no desconecte a todo el mundo ni invalide sus tokens CSRF,
+//     que es justo lo que causaba el error "token de seguridad inválido")
 //
 // Si no configuras TURSO_DATABASE_URL/TURSO_AUTH_TOKEN, este servicio no
-// hace nada (ni falla): la app funciona exactamente igual que antes.
+// hace nada (ni falla): todo funciona exactamente igual que sin él.
 
 const fs = require('fs');
 const path = require('path');
@@ -53,10 +40,22 @@ function resolverRutaDb() {
     : path.resolve(process.cwd(), 'database/carnet.db');
 }
 
+function resolverRutaSesiones() {
+  return path.join(path.dirname(resolverRutaDb()), 'sessions.db');
+}
+
+/** Lista de archivos que se respaldan: nombre lógico + ruta en disco. */
+function archivosARespaldar() {
+  return [
+    { nombre: 'carnet', ruta: resolverRutaDb() },
+    { nombre: 'sessions', ruta: resolverRutaSesiones() },
+  ];
+}
+
 async function asegurarTabla(client) {
   await client.execute(`
     CREATE TABLE IF NOT EXISTS respaldo_sqlite (
-      id INTEGER PRIMARY KEY CHECK (id = 1),
+      nombre TEXT PRIMARY KEY,
       datos BLOB NOT NULL,
       tamano_original INTEGER NOT NULL,
       actualizado_en TEXT NOT NULL
@@ -65,69 +64,76 @@ async function asegurarTabla(client) {
 }
 
 /**
- * Si existe una copia de seguridad en Turso, la descarga y sobrescribe el
- * archivo local de base de datos con ella. Debe llamarse ANTES de que
- * cualquier otro módulo abra la conexión a better-sqlite3.
- * Es totalmente segura de llamar aunque Turso no esté configurado: no hace
- * nada y no lanza error.
+ * Restaura todos los archivos que tengan copia guardada en Turso, escribiendo
+ * cada uno en su ruta local. Debe llamarse ANTES de que cualquier otro
+ * módulo abra esos archivos (better-sqlite3, connect-sqlite3...).
+ * Segura de llamar aunque Turso no esté configurado o falle: no interrumpe
+ * el arranque de la app en ningún caso.
  */
 async function restaurarSiExiste() {
   if (!habilitado()) {
-    console.log('ℹ️  Copia de seguridad (Turso) no configurada — usando la base de datos local tal cual.');
+    console.log('ℹ️  Copia de seguridad (Turso) no configurada — usando los archivos locales tal cual.');
     return;
   }
   try {
     const client = obtenerCliente();
     await asegurarTabla(client);
-    const resultado = await client.execute('SELECT datos, tamano_original, actualizado_en FROM respaldo_sqlite WHERE id = 1');
 
-    if (!resultado.rows.length) {
-      console.log('ℹ️  No hay ninguna copia de seguridad en Turso todavía (primer arranque). Se usará la base de datos local del despliegue.');
-      return;
+    let algunaRestaurada = false;
+    for (const archivo of archivosARespaldar()) {
+      const resultado = await client.execute({
+        sql: 'SELECT datos, actualizado_en FROM respaldo_sqlite WHERE nombre = ?',
+        args: [archivo.nombre],
+      });
+
+      if (!resultado.rows.length) continue;
+
+      const fila = resultado.rows[0];
+      const comprimido = Buffer.from(fila.datos);
+      const datosOriginales = zlib.gunzipSync(comprimido);
+
+      fs.mkdirSync(path.dirname(archivo.ruta), { recursive: true });
+      fs.writeFileSync(archivo.ruta, datosOriginales);
+      console.log(`✅ "${archivo.nombre}" restaurado desde Turso (copia del ${fila.actualizado_en}, ${(datosOriginales.length / 1024 / 1024).toFixed(2)} MB).`);
+      algunaRestaurada = true;
     }
 
-    const fila = resultado.rows[0];
-    const comprimido = Buffer.from(fila.datos);
-    const datosOriginales = zlib.gunzipSync(comprimido);
-
-    const rutaDb = resolverRutaDb();
-    fs.mkdirSync(path.dirname(rutaDb), { recursive: true });
-    fs.writeFileSync(rutaDb, datosOriginales);
-
-    console.log(`✅ Base de datos restaurada desde Turso (copia del ${fila.actualizado_en}, ${(datosOriginales.length / 1024 / 1024).toFixed(2)} MB).`);
+    if (!algunaRestaurada) {
+      console.log('ℹ️  No hay ninguna copia de seguridad en Turso todavía (primer arranque). Se usarán los archivos locales del despliegue.');
+    }
   } catch (err) {
-    console.error('⚠️  No se pudo restaurar la copia de seguridad desde Turso. Se continúa con la base de datos local tal cual.', err.message);
+    console.error('⚠️  No se pudo restaurar la copia de seguridad desde Turso. Se continúa con los archivos locales tal cual.', err.message);
   }
 }
 
 /**
- * Sube el archivo local de base de datos actual a Turso, comprimido.
- * Segura de llamar en cualquier momento; si falla, solo lo registra en el
- * log y no interrumpe la aplicación.
+ * Sube a Turso todos los archivos configurados que existan actualmente en
+ * disco, comprimidos. Segura de llamar en cualquier momento.
  */
 async function respaldar() {
   if (!habilitado()) return;
   try {
-    const rutaDb = resolverRutaDb();
-    if (!fs.existsSync(rutaDb)) return;
-
     const client = obtenerCliente();
     await asegurarTabla(client);
 
-    const datosOriginales = fs.readFileSync(rutaDb);
-    const comprimido = zlib.gzipSync(datosOriginales);
+    for (const archivo of archivosARespaldar()) {
+      if (!fs.existsSync(archivo.ruta)) continue;
 
-    await client.execute({
-      sql: `INSERT INTO respaldo_sqlite (id, datos, tamano_original, actualizado_en)
-            VALUES (1, ?, ?, datetime('now'))
-            ON CONFLICT(id) DO UPDATE SET
-              datos = excluded.datos,
-              tamano_original = excluded.tamano_original,
-              actualizado_en = excluded.actualizado_en`,
-      args: [comprimido, datosOriginales.length],
-    });
+      const datosOriginales = fs.readFileSync(archivo.ruta);
+      const comprimido = zlib.gzipSync(datosOriginales);
 
-    console.log(`💾 Copia de seguridad subida a Turso (${(datosOriginales.length / 1024 / 1024).toFixed(2)} MB).`);
+      await client.execute({
+        sql: `INSERT INTO respaldo_sqlite (nombre, datos, tamano_original, actualizado_en)
+              VALUES (?, ?, ?, datetime('now'))
+              ON CONFLICT(nombre) DO UPDATE SET
+                datos = excluded.datos,
+                tamano_original = excluded.tamano_original,
+                actualizado_en = excluded.actualizado_en`,
+        args: [archivo.nombre, comprimido, datosOriginales.length],
+      });
+
+      console.log(`💾 "${archivo.nombre}" respaldado en Turso (${(datosOriginales.length / 1024 / 1024).toFixed(2)} MB).`);
+    }
   } catch (err) {
     console.error('⚠️  No se pudo subir la copia de seguridad a Turso.', err.message);
   }
@@ -156,4 +162,10 @@ function iniciarRespaldoPeriodico({ intervaloMs = 5 * 60 * 1000 } = {}) {
   process.on('SIGINT', () => respaldoFinal('SIGINT'));
 }
 
-module.exports = { habilitado, restaurarSiExiste, respaldar, iniciarRespaldoPeriodico };
+module.exports = {
+  habilitado,
+  restaurarSiExiste,
+  respaldar,
+  iniciarRespaldoPeriodico,
+  resolverRutaSesiones,
+};

@@ -4,9 +4,10 @@
 <body>
   <%- include('partials/nav') %>
   <div class="container">
-    <div class="flex-between">
-      <h1 id="titulo-test">Test</h1>
-      <span class="text-muted" id="contador-preguntas"></span>
+    <div class="barra-meta-test">
+      <span class="meta-item"><i data-lucide="hash" class="icon-sm"></i> <span id="contador-preguntas">Pregunta 1 de 1</span></span>
+      <span class="meta-item" id="meta-cronometro"><i data-lucide="clock" class="icon-sm"></i> <span id="cronometro">00:00</span></span>
+      <span class="meta-item" id="meta-marcadas" style="display:none;"><i data-lucide="bookmark" class="icon-sm"></i> <span id="contador-marcadas">0</span> para revisar</span>
     </div>
     <div class="progreso-bar"><div class="relleno" id="barra-progreso" style="width:0%"></div></div>
 

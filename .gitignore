@@ -1,9 +1,9 @@
 node_modules/
 data/descargas/
 .env
-# database/*.db
-# database/*.db-journal
-# database/*.db-wal
-# database/*.db-shm
+database/*.db-journal
+database/*.db-wal
+database/*.db-shm
+database/sessions.db
 *.log
 .DS_Store

@@ -5,8 +5,12 @@
 require('dotenv').config();
 
 const path = require('path');
+const fs = require('fs');
 const express = require('express');
 const session = require('express-session');
+const SqliteSessionStore = require('better-sqlite3-session-store')(session);
+const Database = require('better-sqlite3');
+const backupService = require('./src/services/backupService');
 
 const { attachUser } = require('./src/middleware/auth');
 const { ensureCsrfToken, verifyCsrfToken } = require('./src/middleware/csrf');
@@ -24,6 +28,10 @@ const app = express();
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
 
+// Detrás de un proxy inverso (Render, etc.) para que Express detecte bien
+// HTTPS y las direcciones IP reales.
+app.set('trust proxy', 1);
+
 app.use(express.urlencoded({ extended: false }));
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
@@ -32,16 +40,28 @@ if (!process.env.SESSION_SECRET && process.env.NODE_ENV === 'production') {
   console.warn('⚠️  Define SESSION_SECRET en tu .env antes de desplegar en producción.');
 }
 
+// Las sesiones se guardan en un archivo SQLite propio (no en memoria): así
+// un reinicio del proceso no desconecta a todo el mundo ni invalida los
+// tokens CSRF que tuvieran guardados — esto es justo lo que causaba el
+// error "token de seguridad inválido o caducado" apareciendo constantemente.
+// Este archivo de sesiones también se incluye en las copias de seguridad de
+// Turso (src/services/backupService.js).
+const rutaSesiones = backupService.resolverRutaSesiones();
+fs.mkdirSync(path.dirname(rutaSesiones), { recursive: true });
+const dbSesiones = new Database(rutaSesiones);
+dbSesiones.pragma('journal_mode = WAL');
+
 app.use(
   session({
     name: 'carnet.sid',
     secret: process.env.SESSION_SECRET || 'dev-secret-cambia-en-produccion',
+    store: new SqliteSessionStore({ client: dbSesiones, expired: { clear: true, intervalMs: 15 * 60 * 1000 } }),
     resave: false,
     saveUninitialized: false,
     cookie: {
       httpOnly: true,
       sameSite: 'lax',
-      // secure: true, // Actívalo si sirves la app por HTTPS
+      secure: process.env.NODE_ENV === 'production',
       maxAge: 1000 * 60 * 60 * 8, // 8 horas
     },
   })

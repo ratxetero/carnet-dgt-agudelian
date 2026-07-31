@@ -5,18 +5,16 @@
   <%- include('partials/nav') %>
   <div class="container-ancho">
 
-    <div class="manual-hero">
-      <div style="display:flex; align-items:flex-start; gap:16px;">
-        <div class="icono-manual"><i data-lucide="book-open" class="icon-lg"></i></div>
-        <div>
-          <h1>Manual teórico</h1>
-          <p>Consulta el manual completo del carnet B sin salir de la aplicación<% if (tamanoMB) { %> · <%= tamanoMB %> MB<% } %></p>
-        </div>
+    <div class="manual-cabecera">
+      <div>
+        <div class="eyebrow">Consulta</div>
+        <h1>Manual teórico</h1>
+        <p class="text-muted" style="margin:0;">Carnet B, sin salir de la aplicación<% if (tamanoMB) { %> · <%= tamanoMB %> MB<% } %></p>
       </div>
       <% if (existe) { %>
         <div class="acciones-manual">
-          <a href="<%= urlPdf %>" target="_blank" rel="noopener" class="btn"><i data-lucide="maximize-2" class="icon"></i> Abrir a pantalla completa</a>
-          <a href="/manual/descargar" class="btn fantasma"><i data-lucide="download" class="icon"></i> Descargar</a>
+          <a href="<%= urlPdf %>" target="_blank" rel="noopener" class="btn"><i data-lucide="maximize-2" class="icon"></i> Pantalla completa</a>
+          <a href="/manual/descargar" class="btn secundario"><i data-lucide="download" class="icon"></i> Descargar</a>
         </div>
       <% } %>
     </div>

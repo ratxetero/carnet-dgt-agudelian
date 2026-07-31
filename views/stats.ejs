@@ -4,35 +4,21 @@
 <body>
   <%- include('partials/nav') %>
   <div class="container-ancho">
-    <div class="manual-hero">
-      <div>
-        <h1>Tus estadísticas</h1>
-        <p>Cómo te va en conjunto y por tema.</p>
-      </div>
+    <div class="mt-1" style="margin-bottom:14px;">
+      <div class="eyebrow">Progreso</div>
+      <h1>Estadísticas</h1>
     </div>
 
-    <div class="grid" id="resumen-boxes">
-      <div class="stat-box">
-        <div class="icono"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
-        <div class="valor" id="stat-total">–</div><div class="etiqueta">Tests realizados</div>
-      </div>
-      <div class="stat-box">
-        <div class="icono"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="4"/></svg></div>
-        <div class="valor" id="stat-acierto">–</div><div class="etiqueta">Acierto global</div>
-      </div>
-      <div class="stat-box">
-        <div class="icono" style="background:var(--success-100); color:var(--success);"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
-        <div class="valor" id="stat-aprobados">–</div><div class="etiqueta">Aprobados</div>
-      </div>
-      <div class="stat-box">
-        <div class="icono" style="background:var(--danger-100); color:var(--danger);"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
-        <div class="valor" id="stat-suspensos">–</div><div class="etiqueta">Suspensos</div>
-      </div>
+    <div class="franja-indicadores" id="resumen-boxes">
+      <div class="indicador"><span class="valor" id="stat-total">–</span><span class="etiqueta">Tests</span></div>
+      <div class="indicador"><span class="valor" id="stat-acierto">–</span><span class="etiqueta">Acierto</span></div>
+      <div class="indicador"><span class="valor" id="stat-aprobados" style="color:var(--success);">–</span><span class="etiqueta">Aptos</span></div>
+      <div class="indicador"><span class="valor" id="stat-suspensos" style="color:var(--danger);">–</span><span class="etiqueta">No aptos</span></div>
     </div>
 
-    <div class="card mt-2">
+    <div class="card">
       <h2>Aciertos por tema</h2>
-      <p class="text-muted" style="margin-top:-6px;">"T0" corresponde a las preguntas sin categorizar.</p>
+      <p class="text-muted" style="margin-top:-4px;">"T0" corresponde a las preguntas sin categorizar.</p>
       <div class="chart-wrap"><canvas id="chart-temas" height="120"></canvas></div>
     </div>
 
@@ -40,7 +26,7 @@
       <h2>Simulacros oficiales</h2>
       <div style="overflow-x:auto;">
       <table class="tabla-simple" id="tabla-oficiales">
-        <thead><tr><th>Simulacro</th><th>Intentos</th><th>Mejor resultado</th><th>¿Aprobado alguna vez?</th></tr></thead>
+        <thead><tr><th>Simulacro</th><th>Intentos</th><th>Mejor resultado</th><th>¿Aprobado?</th></tr></thead>
         <tbody></tbody>
       </table>
       </div>

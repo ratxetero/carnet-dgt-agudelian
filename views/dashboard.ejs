@@ -5,85 +5,79 @@
   <%- include('partials/nav') %>
   <div class="container-ancho">
 
-    <div class="manual-hero">
+    <div class="flex-between mt-1" style="margin-bottom:14px;">
       <div>
+        <div class="eyebrow">Panel</div>
         <h1>Hola, <%= user.username %></h1>
-        <p>Sigue practicando para el examen teórico de la DGT (carnet B).</p>
       </div>
-      <div class="acciones-manual">
-        <a href="/test/nuevo" class="btn">Empezar un test</a>
-      </div>
+      <a href="/test/nuevo" class="btn"><i data-lucide="play" class="icon"></i> Nuevo test</a>
     </div>
 
-    <div class="grid">
-      <div class="stat-box">
-        <div class="icono"><i data-lucide="clipboard-check" class="icon"></i></div>
-        <div class="valor"><%= resumen.totalTests %></div>
-        <div class="etiqueta">Tests realizados</div>
+    <div class="franja-indicadores">
+      <div class="indicador">
+        <span class="valor"><%= resumen.totalTests %></span>
+        <span class="etiqueta">Tests</span>
       </div>
-      <div class="stat-box">
-        <div class="icono"><i data-lucide="target" class="icon"></i></div>
-        <div class="valor"><%= resumen.porcentajeAcierto %>%</div>
-        <div class="etiqueta">Acierto global</div>
+      <div class="indicador">
+        <span class="valor"><%= resumen.porcentajeAcierto %>%</span>
+        <span class="etiqueta">Acierto</span>
       </div>
-      <div class="stat-box">
-        <div class="icono" style="background:var(--success-100); color:var(--success);"><i data-lucide="check-circle-2" class="icon"></i></div>
-        <div class="valor"><%= resumen.totalAprobados %></div>
-        <div class="etiqueta">Aprobados</div>
+      <div class="indicador">
+        <span class="valor" style="color:var(--success);"><%= resumen.totalAprobados %></span>
+        <span class="etiqueta">Aptos</span>
       </div>
-      <div class="stat-box">
-        <div class="icono" style="background:var(--danger-100); color:var(--danger);"><i data-lucide="x-circle" class="icon"></i></div>
-        <div class="valor"><%= resumen.totalSuspensos %></div>
-        <div class="etiqueta">Suspensos</div>
+      <div class="indicador">
+        <span class="valor" style="color:var(--danger);"><%= resumen.totalSuspensos %></span>
+        <span class="etiqueta">No aptos</span>
       </div>
     </div>
 
     <% if (totalFallos > 0) { %>
-      <div class="card mt-2" style="border-left:3px solid var(--warning); display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:14px;">
+      <div class="card" style="border-left:2px solid var(--warning); display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:12px;">
         <div class="flex-icon">
-          <i data-lucide="bookmark" class="icon" style="color:var(--warning);"></i>
-          <div>
-            <h3 style="margin:0 0 4px;">Tienes <%= totalFallos %> pregunta<%= totalFallos===1?'':'s' %> pendiente<%= totalFallos===1?'':'s' %> de repasar</h3>
-            <p class="text-muted" style="margin:0;">Repasar los fallos es la forma más rápida de subir nota.</p>
-          </div>
+          <i data-lucide="alert-triangle" class="icon" style="color:var(--warning);"></i>
+          <span style="font-size:0.88rem;"><strong><%= totalFallos %></strong> pregunta<%= totalFallos===1?'':'s' %> pendiente<%= totalFallos===1?'':'s' %> de repasar</span>
         </div>
-        <a href="/test/nuevo" class="btn secundario">Repasar ahora</a>
+        <a href="/test/nuevo" class="btn secundario" style="padding:7px 12px; font-size:0.82rem; min-height:auto;">Repasar</a>
       </div>
     <% } %>
 
-    <div class="grid mt-2">
-      <a href="/test/nuevo" class="card" style="text-decoration:none; color:inherit; display:block;">
-        <div class="icono-modo mt-1" style="margin-bottom:10px;"><i data-lucide="square-pen" class="icon"></i></div>
-        <h3 style="margin:0 0 4px;">Nuevo test</h3>
-        <p class="text-muted" style="margin:0;">Aleatorio, por tema, simulacro o repaso de fallos.</p>
+    <div class="lista-accesos">
+      <a href="/test/nuevo">
+        <i data-lucide="square-pen" class="icon"></i>
+        <span class="texto"><strong>Nuevo test</strong><span>Aleatorio, por tema, simulacro o repaso</span></span>
+        <i data-lucide="chevron-right" class="icon chevron"></i>
       </a>
-      <a href="/cuaderno" class="card" style="text-decoration:none; color:inherit; display:block;">
-        <div class="icono-modo mt-1" style="margin-bottom:10px;"><i data-lucide="notebook-text" class="icon"></i></div>
-        <h3 style="margin:0 0 4px;">Cuaderno</h3>
-        <p class="text-muted" style="margin:0;">Tus notas de estudio, en un solo lugar.</p>
+      <a href="/cuaderno">
+        <i data-lucide="notebook-text" class="icon"></i>
+        <span class="texto"><strong>Cuaderno</strong><span>Tus notas de estudio</span></span>
+        <i data-lucide="chevron-right" class="icon chevron"></i>
       </a>
-      <a href="/manual" class="card" style="text-decoration:none; color:inherit; display:block;">
-        <div class="icono-modo mt-1" style="margin-bottom:10px;"><i data-lucide="book-open" class="icon"></i></div>
-        <h3 style="margin:0 0 4px;">Manual</h3>
-        <p class="text-muted" style="margin:0;">Consulta el manual teórico sin salir de la app.</p>
+      <a href="/manual">
+        <i data-lucide="book-open" class="icon"></i>
+        <span class="texto"><strong>Manual</strong><span>Consulta el manual teórico</span></span>
+        <i data-lucide="chevron-right" class="icon chevron"></i>
+      </a>
+      <a href="/stats">
+        <i data-lucide="bar-chart-3" class="icon"></i>
+        <span class="texto"><strong>Estadísticas</strong><span>Tu progreso por tema</span></span>
+        <i data-lucide="chevron-right" class="icon chevron"></i>
       </a>
     </div>
 
-    <div class="card mt-2">
+    <div class="card">
       <h2>Últimos resultados</h2>
       <% if (!resumen.ultimos.length) { %>
         <div class="estado-vacio">
-          <div class="icono-vacio"><i data-lucide="car" class="icon-lg"></i></div>
+          <div class="icono-vacio"><i data-lucide="car-front" class="icon-lg"></i></div>
           <h3>Todavía no has hecho ningún test</h3>
-          <p>Empieza con un test aleatorio para ver dónde estás y qué repasar.</p>
-          <a href="/test/nuevo" class="btn">Empezar ahora</a>
+          <p>Empieza con uno aleatorio para ver dónde estás.</p>
+          <a href="/test/nuevo" class="btn">Empezar</a>
         </div>
       <% } else { %>
         <div style="overflow-x:auto;">
         <table class="tabla-simple">
-          <thead>
-            <tr><th>Fecha</th><th>Tipo</th><th>Preguntas</th><th>Aciertos</th><th>Fallos</th><th>Resultado</th></tr>
-          </thead>
+          <thead><tr><th>Fecha</th><th>Tipo</th><th>Preguntas</th><th>Aciertos</th><th>Fallos</th><th>Resultado</th></tr></thead>
           <tbody>
             <% resumen.ultimos.forEach(function(t){ %>
               <tr>
@@ -105,14 +99,9 @@
       <% } %>
     </div>
 
-    <div class="card mt-2">
-      <h2>Simulacros disponibles</h2>
-      <% if (!examenes.length) { %>
-        <p class="text-muted">Aún no hay simulacros cargados. Usa <code>npm run db:seed:full</code> o el script de generación de simulacros.</p>
-      <% } else { %>
-        <p class="text-muted mt-1"><%= examenes.length %> simulacros de 30 preguntas reales, en formato de examen oficial DGT.</p>
-      <% } %>
-    </div>
+    <% if (examenes.length) { %>
+      <p class="text-muted"><%= examenes.length %> simulacros de 30 preguntas disponibles en formato de examen oficial DGT.</p>
+    <% } %>
   </div>
 </body>
 </html>

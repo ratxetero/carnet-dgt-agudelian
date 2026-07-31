@@ -6,32 +6,62 @@
   <div class="container">
     <h1>Resultados del test</h1>
 
+    <div class="tarjeta-resultado <%= test.aprobado ? 'apto' : 'no-apto' %>">
+      <div class="imagen-resultado">
+        <% if (test.aprobado) { %>
+          <img src="/images/marca/logo-gato.png" alt="Gato conduciendo, ¡aprobado!" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';" />
+          <div class="imagen-resultado-fallback" style="display:none;"><i data-lucide="check-circle-2" class="icon-lg"></i></div>
+        <% } else { %>
+          <img src="/images/marca/gato-triste.svg" alt="Gato triste" class="svg-gato-triste" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';" />
+          <div class="imagen-resultado-fallback" style="display:none;"><i data-lucide="x-circle" class="icon-lg"></i></div>
+        <% } %>
+      </div>
+
+      <div class="contenido-resultado">
 <%
-  const radio = 74;
+  const radio = 60;
   const circunferencia = 2 * Math.PI * radio;
   const fraccion = test.num_preguntas > 0 ? test.aciertos / test.num_preguntas : 0;
   const offset = circunferencia * (1 - fraccion);
   const colorAro = test.aprobado ? 'var(--success)' : 'var(--danger)';
 %>
-    <div class="card" style="text-align:center;">
-      <div class="marcador-resultado">
-        <svg width="180" height="180" viewBox="0 0 180 180">
-          <circle cx="90" cy="90" r="<%= radio %>" fill="none" stroke="var(--border)" stroke-width="14" />
-          <circle cx="90" cy="90" r="<%= radio %>" fill="none" stroke="<%= colorAro %>" stroke-width="14"
-                  stroke-linecap="round" stroke-dasharray="<%= circunferencia %>" stroke-dashoffset="<%= offset %>"
-                  transform="rotate(-90 90 90)" style="transition: stroke-dashoffset 0.6s ease;" />
-          <text x="90" y="85" text-anchor="middle" class="numero-central"><%= test.aciertos %>/<%= test.num_preguntas %></text>
-          <text x="90" y="108" text-anchor="middle" class="etiqueta-central">aciertos</text>
-        </svg>
+        <div class="marcador-resultado">
+          <svg width="148" height="148" viewBox="0 0 148 148">
+            <circle cx="74" cy="74" r="<%= radio %>" fill="none" stroke="var(--border)" stroke-width="12" />
+            <circle cx="74" cy="74" r="<%= radio %>" fill="none" stroke="<%= colorAro %>" stroke-width="12"
+                    stroke-linecap="round" stroke-dasharray="<%= circunferencia %>" stroke-dashoffset="<%= offset %>"
+                    transform="rotate(-90 74 74)" style="transition: stroke-dashoffset 0.6s ease;" />
+            <text x="74" y="70" text-anchor="middle" class="numero-central"><%= test.aciertos %>/<%= test.num_preguntas %></text>
+            <text x="74" y="90" text-anchor="middle" class="etiqueta-central">aciertos</text>
+          </svg>
+        </div>
+
+        <div class="badge <%= test.aprobado ? 'ok' : 'fail' %>" style="font-size:0.9rem;">
+          <i data-lucide="<%= test.aprobado ? 'check-circle-2' : 'x-circle' %>" class="icon-sm"></i>
+          <%= test.aprobado ? 'APTO' : 'NO APTO' %>
+        </div>
+
+        <p class="mensaje-resultado">
+          <% if (test.aprobado) { %>
+            ¡Buen trabajo! Con <%= test.fallos %> fallo<%= test.fallos===1?'':'s' %> habrías aprobado el examen real.
+          <% } else { %>
+            Te faltó un poco. Repasa los temas donde más fallaste y vuelve a intentarlo.
+          <% } %>
+        </p>
+        <p class="text-muted" style="margin:0;">
+          Aciertos: <%= test.aciertos %> · Fallos: <%= test.fallos %> · En blanco: <%= test.en_blanco %>
+          <% if (test.tiempo_segundos) { %> · Tiempo: <%= Math.floor(test.tiempo_segundos/60) %> min <%= test.tiempo_segundos%60 %> s<% } %>
+        </p>
+
+        <div class="acciones-resultado">
+          <% if (test.aprobado) { %>
+            <a href="/test/nuevo" class="btn">Otro test</a>
+          <% } else { %>
+            <a href="/test/nuevo" class="btn">Repasar fallos</a>
+          <% } %>
+          <a href="/" class="btn secundario">Inicio</a>
+        </div>
       </div>
-      <div class="badge <%= test.aprobado ? 'ok' : 'fail' %>" style="font-size:0.95rem; margin-top:4px;">
-        <i data-lucide="<%= test.aprobado ? 'check-circle-2' : 'x-circle' %>" class="icon-sm"></i>
-        <%= test.aprobado ? 'APTO' : 'NO APTO' %>
-      </div>
-      <p class="text-muted mt-2">
-        Aciertos: <%= test.aciertos %> · Fallos: <%= test.fallos %> · En blanco: <%= test.en_blanco %>
-        <% if (test.tiempo_segundos) { %> · Tiempo: <%= Math.floor(test.tiempo_segundos/60) %> min <%= test.tiempo_segundos%60 %> s<% } %>
-      </p>
     </div>
 
     <div class="card">

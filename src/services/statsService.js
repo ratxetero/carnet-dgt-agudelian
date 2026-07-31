@@ -34,6 +34,9 @@ function resumenGlobal(usuario_id) {
     totalTests: totales.total_tests,
     totalAprobados: totales.total_aprobados,
     totalSuspensos: totales.total_tests - totales.total_aprobados,
+    totalAciertos: totales.total_aciertos,
+    totalFallos: totales.total_fallos,
+    totalEnBlanco: totales.total_en_blanco,
     porcentajeAcierto,
     ultimos,
   };

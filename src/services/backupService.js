@@ -61,6 +61,37 @@ async function asegurarTabla(client) {
       actualizado_en TEXT NOT NULL
     )
   `);
+
+  // Migración: si la tabla ya existía en Turso de un despliegue anterior con
+  // el esquema antiguo (columna "id" en vez de "nombre", de cuando este
+  // proyecto solo respaldaba un único archivo), CREATE TABLE IF NOT EXISTS
+  // no la toca — por eso el error "no such column: nombre" se repetía en
+  // cada deploy. Aquí comprobamos las columnas reales de la tabla remota y,
+  // si detectamos el esquema antiguo, la recreamos con el esquema nuevo.
+  // Es seguro: esta tabla es solo una copia de seguridad (no la fuente de
+  // verdad), así que se rellena de nuevo automáticamente en el siguiente
+  // ciclo de respaldo.
+  try {
+    const info = await client.execute('PRAGMA table_info(respaldo_sqlite)');
+    const columnas = info.rows.map((r) => r.name);
+    if (!columnas.includes('nombre')) {
+      console.log('🔧 Esquema antiguo detectado en "respaldo_sqlite" (sin columna "nombre") — migrando...');
+      await client.execute('DROP TABLE respaldo_sqlite');
+      await client.execute(`
+        CREATE TABLE respaldo_sqlite (
+          nombre TEXT PRIMARY KEY,
+          datos BLOB NOT NULL,
+          tamano_original INTEGER NOT NULL,
+          actualizado_en TEXT NOT NULL
+        )
+      `);
+      console.log('✅ Esquema de "respaldo_sqlite" migrado correctamente.');
+    }
+  } catch (err) {
+    // Si por lo que sea PRAGMA table_info no está disponible, no bloqueamos
+    // el arranque: simplemente lo registramos y seguimos.
+    console.error('⚠️  No se pudo comprobar/migrar el esquema de "respaldo_sqlite".', err.message);
+  }
 }
 
 /**

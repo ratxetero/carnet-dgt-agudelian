@@ -9,11 +9,17 @@
       <h1>Estadísticas</h1>
     </div>
 
-    <div class="franja-indicadores" id="resumen-boxes">
-      <div class="indicador"><span class="valor" id="stat-total">–</span><span class="etiqueta">Tests</span></div>
-      <div class="indicador"><span class="valor" id="stat-acierto">–</span><span class="etiqueta">Acierto</span></div>
-      <div class="indicador"><span class="valor" id="stat-aprobados" style="color:var(--success);">–</span><span class="etiqueta">Aptos</span></div>
-      <div class="indicador"><span class="valor" id="stat-suspensos" style="color:var(--danger);">–</span><span class="etiqueta">No aptos</span></div>
+    <div class="grid-donuts">
+      <div class="card tarjeta-donut">
+        <h2>Aciertos globales</h2>
+        <div class="donut-wrap"><canvas id="donut-aciertos"></canvas></div>
+        <div class="leyenda-donut" id="leyenda-aciertos"></div>
+      </div>
+      <div class="card tarjeta-donut">
+        <h2>Resultado de tests</h2>
+        <div class="donut-wrap"><canvas id="donut-aptos"></canvas></div>
+        <div class="leyenda-donut" id="leyenda-aptos"></div>
+      </div>
     </div>
 
     <div class="card">

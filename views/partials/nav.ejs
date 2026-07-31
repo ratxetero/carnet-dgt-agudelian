@@ -1,5 +1,5 @@
 <header class="navbar">
-  <a class="brand" href="/"><img src="/images/marca/logo-gato.png" alt="Logo" class="marca-img" /> Carnet</a>
+  <a class="brand" href="/"><img src="/images/marca/logo-gato.png" alt="Logo" class="marca-img" /> Test teórico Alejandro</a>
   <% if (user) { %>
     <nav class="nav-desktop">
       <a href="/" class="<%= rutaActual === '/' ? 'activo' : '' %>"><i data-lucide="home" class="icon"></i> Inicio</a>
@@ -20,8 +20,8 @@
           <button type="submit" class="link-button"><i data-lucide="log-out" class="icon icon-sm"></i></button>
         </form>
       </div>
-      <button type="button" class="nav-toggle" id="btn-nav-toggle" aria-label="Abrir menú" aria-expanded="false">
-        <i data-lucide="menu" class="icon"></i>
+      <button type="button" class="nav-toggle" id="btn-nav-toggle" aria-label="Abrir menú" aria-expanded="false" aria-controls="nav-mobile">
+        <i data-lucide="menu" class="icon" id="icono-nav-toggle"></i>
       </button>
     </div>
   <% } else { %>
@@ -32,7 +32,8 @@
   <% } %>
 </header>
 <% if (user) { %>
-  <nav class="nav-mobile" id="nav-mobile">
+  <div class="nav-backdrop" id="nav-backdrop"></div>
+  <nav class="nav-mobile" id="nav-mobile" aria-hidden="true">
     <a href="/"><i data-lucide="home" class="icon"></i> Inicio</a>
     <a href="/test/nuevo"><i data-lucide="square-pen" class="icon"></i> Nuevo test</a>
     <a href="/cuaderno"><i data-lucide="notebook-text" class="icon"></i> Cuaderno</a>
@@ -48,12 +49,52 @@
   (function () {
     var btnNav = document.getElementById('btn-nav-toggle');
     var menu = document.getElementById('nav-mobile');
+    var backdrop = document.getElementById('nav-backdrop');
+    var icono = document.getElementById('icono-nav-toggle');
+
+    function abrirMenu() {
+      menu.classList.add('abierto');
+      if (backdrop) backdrop.classList.add('abierto');
+      menu.setAttribute('aria-hidden', 'false');
+      btnNav.setAttribute('aria-expanded', 'true');
+      if (icono) icono.setAttribute('data-lucide', 'x');
+      if (window.lucide) lucide.createIcons();
+    }
+    function cerrarMenu() {
+      menu.classList.remove('abierto');
+      if (backdrop) backdrop.classList.remove('abierto');
+      menu.setAttribute('aria-hidden', 'true');
+      btnNav.setAttribute('aria-expanded', 'false');
+      if (icono) icono.setAttribute('data-lucide', 'menu');
+      if (window.lucide) lucide.createIcons();
+    }
+
     if (btnNav && menu) {
-      btnNav.addEventListener('click', function () {
-        var abierto = menu.classList.toggle('abierto');
-        btnNav.setAttribute('aria-expanded', abierto ? 'true' : 'false');
+      btnNav.addEventListener('click', function (e) {
+        e.stopPropagation();
+        var abierto = menu.classList.contains('abierto');
+        if (abierto) cerrarMenu(); else abrirMenu();
+      });
+
+      // Cerrar al elegir cualquier opción del menú
+      menu.querySelectorAll('a, button').forEach(function (el) {
+        el.addEventListener('click', cerrarMenu);
+      });
+
+      // Cerrar al tocar el fondo oscurecido o cualquier zona fuera del menú
+      if (backdrop) backdrop.addEventListener('click', cerrarMenu);
+      document.addEventListener('click', function (e) {
+        if (menu.classList.contains('abierto') && !menu.contains(e.target) && e.target !== btnNav && !btnNav.contains(e.target)) {
+          cerrarMenu();
+        }
+      });
+
+      // Cerrar con la tecla Escape
+      document.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape' && menu.classList.contains('abierto')) cerrarMenu();
       });
     }
+
     document.querySelectorAll('[data-theme-toggle]').forEach(function (btn) {
       btn.addEventListener('click', function () {
         var actual = document.documentElement.getAttribute('data-tema');
@@ -62,6 +103,7 @@
         try { localStorage.setItem('tema', nuevo); } catch (e) {}
       });
     });
+
     document.addEventListener('DOMContentLoaded', function () {
       if (window.lucide) lucide.createIcons();
     });

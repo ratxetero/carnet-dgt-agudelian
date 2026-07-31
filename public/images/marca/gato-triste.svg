@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="140" height="140">
+  <!-- Cara -->
+  <circle cx="100" cy="105" r="62" fill="none" stroke="currentColor" stroke-width="4"/>
+  <!-- Orejas -->
+  <path d="M52 68 L40 28 L78 52 Z" fill="none" stroke="currentColor" stroke-width="4" stroke-linejoin="round"/>
+  <path d="M148 68 L160 28 L122 52 Z" fill="none" stroke="currentColor" stroke-width="4" stroke-linejoin="round"/>
+  <!-- Ojos tristes (semicírculos hacia abajo) -->
+  <path d="M68 100 Q78 112 88 100" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round"/>
+  <path d="M112 100 Q122 112 132 100" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round"/>
+  <!-- Lagrima -->
+  <path d="M76 112 Q80 122 76 130 Q70 122 76 112 Z" fill="currentColor" opacity="0.55"/>
+  <!-- Nariz -->
+  <path d="M96 124 L104 124 L100 130 Z" fill="currentColor"/>
+  <!-- Boca triste -->
+  <path d="M84 148 Q100 136 116 148" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round"/>
+  <!-- Bigotes -->
+  <line x1="30" y1="118" x2="62" y2="122" stroke="currentColor" stroke-width="3" stroke-linecap="round"/>
+  <line x1="30" y1="132" x2="62" y2="130" stroke="currentColor" stroke-width="3" stroke-linecap="round"/>
+  <line x1="170" y1="118" x2="138" y2="122" stroke="currentColor" stroke-width="3" stroke-linecap="round"/>
+  <line x1="170" y1="132" x2="138" y2="130" stroke="currentColor" stroke-width="3" stroke-linecap="round"/>
+</svg>

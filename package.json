@@ -20,8 +20,9 @@
   },
   "license": "MIT",
   "dependencies": {
-    "better-sqlite3": "^12.4.1",
+    "@libsql/client": "^0.17.4",
     "bcryptjs": "^2.4.3",
+    "better-sqlite3": "^12.4.1",
     "dotenv": "^16.4.5",
     "ejs": "^3.1.10",
     "express": "^4.19.2",

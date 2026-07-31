@@ -1,73 +1,43 @@
 // server.js
+// Punto de entrada real del proceso. El orden aquí es crítico:
+//   1. Restaurar la última copia de seguridad desde Turso (si está
+//      configurado) ANTES de tocar la base de datos local.
+//   2. Solo entonces, requerir ./app.js (que abre la conexión a
+//      better-sqlite3 y monta todas las rutas).
+//   3. Arrancar el servidor HTTP.
+//   4. Programar copias de seguridad periódicas y una última copia al
+//      recibir la señal de apagado (Render la envía antes de cada
+//      redeploy/reinicio, así que esto es lo que evita perder datos).
+//
+// Si no tienes Turso configurado (TURSO_DATABASE_URL/TURSO_AUTH_TOKEN en
+// tu .env), todo esto es un no-op silencioso: la app arranca exactamente
+// igual que siempre, con la base de datos local tal cual esté.
+
 require('dotenv').config();
 
-const path = require('path');
-const express = require('express');
-const session = require('express-session');
+const backupService = require('./src/services/backupService');
 
-const { attachUser } = require('./src/middleware/auth');
-const { ensureCsrfToken, verifyCsrfToken } = require('./src/middleware/csrf');
+async function iniciar() {
+  await backupService.restaurarSiExiste();
 
-const authRoutes = require('./src/routes/auth.routes');
-const pagesRoutes = require('./src/routes/pages.routes');
-const testRoutes = require('./src/routes/test.routes');
-const statsRoutes = require('./src/routes/stats.routes');
-const notesRoutes = require('./src/routes/notes.routes');
-const expertRoutes = require('./src/routes/expert.routes');
-const manualRoutes = require('./src/routes/manual.routes');
+  const app = require('./app');
+  const PORT = process.env.PORT || 3000;
 
-const app = express();
-const PORT = process.env.PORT || 3000;
+  const servidor = app.listen(PORT, () => {
+    console.log(`🚗 Carnet DGT Agudelian escuchando en http://localhost:${PORT}`);
+    if (backupService.habilitado()) {
+      console.log('💾 Copias de seguridad automáticas en Turso: activadas.');
+    } else {
+      console.log('ℹ️  Copias de seguridad automáticas en Turso: no configuradas (ver .env.example).');
+    }
+  });
 
-app.set('view engine', 'ejs');
-app.set('views', path.join(__dirname, 'views'));
+  backupService.iniciarRespaldoPeriodico({ intervaloMs: Number(process.env.BACKUP_INTERVALO_MS) || 5 * 60 * 1000 });
 
-app.use(express.urlencoded({ extended: false }));
-app.use(express.json());
-app.use(express.static(path.join(__dirname, 'public')));
-
-if (!process.env.SESSION_SECRET && process.env.NODE_ENV === 'production') {
-  console.warn('⚠️  Define SESSION_SECRET en tu .env antes de desplegar en producción.');
+  return servidor;
 }
 
-app.use(
-  session({
-    name: 'carnet.sid',
-    secret: process.env.SESSION_SECRET || 'dev-secret-cambia-en-produccion',
-    resave: false,
-    saveUninitialized: false,
-    cookie: {
-      httpOnly: true,
-      sameSite: 'lax',
-      // secure: true, // Actívalo si sirves la app por HTTPS
-      maxAge: 1000 * 60 * 60 * 8, // 8 horas
-    },
-  })
-);
-
-app.use(attachUser);
-app.use((req, res, next) => { res.locals.rutaActual = req.path; next(); });
-app.use(ensureCsrfToken);
-app.use(verifyCsrfToken);
-
-app.use('/', authRoutes);
-app.use('/', pagesRoutes);
-app.use('/', testRoutes);
-app.use('/', statsRoutes);
-app.use('/', notesRoutes);
-app.use('/', expertRoutes);
-app.use('/', manualRoutes);
-
-app.use((req, res) => {
-  res.status(404).render('error', { titulo: 'Página no encontrada', mensaje: 'La página que buscas no existe.' });
-});
-
-// Manejador de errores genérico
-app.use((err, req, res, next) => {
-  console.error(err);
-  res.status(500).render('error', { titulo: 'Error inesperado', mensaje: 'Ha ocurrido un error en el servidor.' });
-});
-
-app.listen(PORT, () => {
-  console.log(`🚗 Carnet DGT Agudelian escuchando en http://localhost:${PORT}`);
+iniciar().catch((err) => {
+  console.error('❌ Error fatal al arrancar el servidor:', err);
+  process.exit(1);
 });

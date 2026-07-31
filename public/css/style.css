@@ -478,7 +478,7 @@ img { max-width: 100%; }
 /* --------------------------------- Responsive (mobile-first, prioridad iPhone) --------------------------------- */
 
 @media (max-width: 720px) {
-  .nav-desktop { display: none; }
+  .navbar .nav-desktop { display: none; }
   .nav-toggle { display: flex; }
   .container, .container-ancho { padding: 18px 16px calc(70px + var(--safe-b)); }
   h1 { font-size: 1.35rem; }

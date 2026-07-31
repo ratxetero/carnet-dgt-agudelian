@@ -4,32 +4,40 @@
 <body>
   <%- include('partials/nav') %>
   <div class="auth-shell">
-    <form class="form-auth" method="POST" action="/register">
-      <div class="marca-auth"><img src="/images/marca/logo-gato.png" alt="Logo" /> <span>Test teórico Alejandro</span></div>
-      <h1>Crear cuenta</h1>
-      <% if (errores && errores.length) { %>
-        <div class="errores"><i data-lucide="alert-circle" class="icon-sm" style="margin-top:2px;"></i><div><% errores.forEach(function(e){ %><div><%= e %></div><% }) %></div></div>
-      <% } %>
-      <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
-      <div class="campo">
-        <label for="username">Usuario</label>
-        <input type="text" id="username" name="username" value="<%= valores.username || '' %>" required autofocus />
+    <div class="auth-imagen-panel">
+      <img src="/images/marca/gato-aprobado.png" alt="Gato conduciendo un coche rojo con gafas de sol" />
+      <div class="auth-imagen-texto">
+        <span class="eyebrow" style="color:rgba(255,255,255,0.75);">Test teórico Alejandro</span>
+        <p>Crea tu cuenta y empieza a practicar hoy.</p>
       </div>
-      <div class="campo">
-        <label for="email">Email</label>
-        <input type="email" id="email" name="email" value="<%= valores.email || '' %>" required />
-      </div>
-      <div class="campo">
-        <label for="password">Contraseña (mín. 8 caracteres)</label>
-        <input type="password" id="password" name="password" minlength="8" required />
-      </div>
-      <div class="campo">
-        <label for="password2">Repite la contraseña</label>
-        <input type="password" id="password2" name="password2" minlength="8" required />
-      </div>
-      <button type="submit" class="btn grande"><i data-lucide="user-plus" class="icon"></i> Crear cuenta</button>
-      <p class="text-muted mt-2">¿Ya tienes cuenta? <a href="/login">Inicia sesión</a>.</p>
-    </form>
+    </div>
+    <div class="auth-form-panel">
+      <form class="form-auth" method="POST" action="/register">
+        <h1>Crear cuenta</h1>
+        <% if (errores && errores.length) { %>
+          <div class="errores"><i data-lucide="alert-circle" class="icon-sm" style="margin-top:2px;"></i><div><% errores.forEach(function(e){ %><div><%= e %></div><% }) %></div></div>
+        <% } %>
+        <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
+        <div class="campo">
+          <label for="username">Usuario</label>
+          <input type="text" id="username" name="username" value="<%= valores.username || '' %>" required autofocus />
+        </div>
+        <div class="campo">
+          <label for="email">Email</label>
+          <input type="email" id="email" name="email" value="<%= valores.email || '' %>" required />
+        </div>
+        <div class="campo">
+          <label for="password">Contraseña (mín. 8 caracteres)</label>
+          <input type="password" id="password" name="password" minlength="8" required />
+        </div>
+        <div class="campo">
+          <label for="password2">Repite la contraseña</label>
+          <input type="password" id="password2" name="password2" minlength="8" required />
+        </div>
+        <button type="submit" class="btn grande"><i data-lucide="user-plus" class="icon"></i> Crear cuenta</button>
+        <p class="text-muted mt-2">¿Ya tienes cuenta? <a href="/login">Inicia sesión</a>.</p>
+      </form>
+    </div>
   </div>
 </body>
 </html>

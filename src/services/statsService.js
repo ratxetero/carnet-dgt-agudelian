@@ -75,6 +75,7 @@ function statsPorExamenOficial(usuario_id) {
          MAX(t.aciertos) AS mejor_resultado
        FROM examenes_oficiales e
        LEFT JOIN tests t ON t.examen_id = e.id AND t.usuario_id = ? AND t.finalizado_en IS NOT NULL
+       WHERE e.tema_id IS NULL
        GROUP BY e.id
        ORDER BY e.id ASC`
     )

@@ -9,10 +9,10 @@
     <div class="tarjeta-resultado <%= test.aprobado ? 'apto' : 'no-apto' %>">
       <div class="imagen-resultado">
         <% if (test.aprobado) { %>
-          <img src="/images/marca/logo-gato.png" alt="Gato conduciendo, ¡aprobado!" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';" />
+          <img src="/images/marca/gato-aprobado.png" alt="Gato conduciendo un coche rojo, ¡aprobado!" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';" />
           <div class="imagen-resultado-fallback" style="display:none;"><i data-lucide="check-circle-2" class="icon-lg"></i></div>
         <% } else { %>
-          <img src="/images/marca/gato-triste.svg" alt="Gato triste" class="svg-gato-triste" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';" />
+          <img src="/images/marca/gato-triste.png" alt="Gato triste" class="svg-gato-triste" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';" />
           <div class="imagen-resultado-fallback" style="display:none;"><i data-lucide="x-circle" class="icon-lg"></i></div>
         <% } %>
       </div>

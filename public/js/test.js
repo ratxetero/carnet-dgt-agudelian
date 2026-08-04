@@ -56,7 +56,35 @@
   const btnSiguiente = document.getElementById('btn-siguiente');
   const cronometroEl = document.getElementById('cronometro');
   const toastFeedback = document.getElementById('toast-feedback');
+  const comboHud = document.getElementById('combo-hud');
   let temporizadorToast = null;
+  let temporizadorCombo = null;
+  let rachaAciertos = 0;
+  let rachaFallos = 0;
+
+  function actualizarCombo(esCorrecta) {
+    if (esCorrecta) { rachaAciertos++; rachaFallos = 0; }
+    else { rachaFallos++; rachaAciertos = 0; }
+
+    if (rachaAciertos >= 2) mostrarCombo(rachaAciertos, true);
+    else if (rachaFallos >= 2) mostrarCombo(rachaFallos, false);
+  }
+
+  function mostrarCombo(n, esPositivo) {
+    if (!comboHud) return;
+    let etiqueta;
+    if (esPositivo) etiqueta = n >= 5 ? 'PERFECT RUN' : n >= 4 ? 'ON FIRE' : 'HIT COMBO';
+    else etiqueta = n >= 4 ? 'MISTAKE STREAK — ¡recupérate!' : 'ERROR CHAIN';
+
+    comboHud.textContent = `${n} ${etiqueta}`;
+    comboHud.className = 'combo-hud ' + (esPositivo ? 'positivo' : 'negativo');
+    // Fuerza un reflow para poder reiniciar la animación de "pop" aunque
+    // el combo ya estuviera visible (racha que sigue creciendo).
+    void comboHud.offsetWidth;
+    comboHud.classList.add('visible', 'pop');
+    clearTimeout(temporizadorCombo);
+    temporizadorCombo = setTimeout(() => { comboHud.classList.remove('visible'); }, 2200);
+  }
 
   function mostrarToastFeedback(esCorrecta) {
     clearTimeout(temporizadorToast);
@@ -179,6 +207,7 @@
         opcionElegidaExplicacion: data.opcionElegidaExplicacion,
         opcionCorrectaExplicacion: data.opcionCorrectaExplicacion,
       });
+      actualizarCombo(data.esCorrecta);
       render();
     } catch (e) {
       alert(e.message);

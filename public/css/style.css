@@ -440,7 +440,7 @@ textarea, input[type="text"], input[type="email"], input[type="password"] { font
 .grid-donuts { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; margin-bottom: 14px; }
 .tarjeta-donut { text-align: center; }
 .tarjeta-donut h2 { text-align: left; margin-bottom: 10px; }
-.donut-wrap { max-width: 190px; margin: 0 auto; }
+.donut-wrap { max-width: 190px; margin: 0 auto; position: relative; height: 190px; }
 .leyenda-donut { display: flex; justify-content: center; gap: 12px; flex-wrap: wrap; margin-top: 12px; }
 .leyenda-donut .leyenda-item { display: inline-flex; align-items: center; gap: 6px; font-size: 0.78rem; color: var(--ink-soft); }
 .leyenda-donut .punto { width: 8px; height: 8px; border-radius: 50%; display: inline-block; flex: none; }

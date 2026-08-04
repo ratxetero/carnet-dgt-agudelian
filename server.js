@@ -32,7 +32,7 @@ async function iniciar() {
     }
   });
 
-  backupService.iniciarRespaldoPeriodico({ intervaloMs: Number(process.env.BACKUP_INTERVALO_MS) || 5 * 60 * 1000 });
+  backupService.iniciarRespaldoPeriodico({ intervaloMs: Number(process.env.BACKUP_INTERVALO_MS) || 2 * 60 * 1000 });
 
   return servidor;
 }

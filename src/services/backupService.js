@@ -175,8 +175,15 @@ async function respaldar() {
  * copia al recibir señales de apagado (SIGTERM/SIGINT), que es exactamente
  * lo que envía Render antes de reiniciar/redeployar el servicio.
  */
-function iniciarRespaldoPeriodico({ intervaloMs = 5 * 60 * 1000 } = {}) {
+function iniciarRespaldoPeriodico({ intervaloMs = 2 * 60 * 1000 } = {}) {
   if (!habilitado()) return;
+
+  // Primera copia poco después de arrancar (no esperamos un ciclo entero):
+  // si el proceso muriera pronto tras un deploy, al menos queda un respaldo
+  // reciente en vez de depender solo de la copia final al apagarse.
+  setTimeout(() => {
+    respaldar().catch(() => {});
+  }, 20 * 1000);
 
   const temporizador = setInterval(() => {
     respaldar().catch(() => {});

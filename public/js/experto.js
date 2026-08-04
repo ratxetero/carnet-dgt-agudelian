@@ -25,10 +25,23 @@
     return div.innerHTML;
   }
 
+  // Interpreta un subconjunto seguro de markdown (negrita, cursiva, código
+  // en línea) que suele usar el modelo de IA en sus respuestas. Escapamos el
+  // HTML primero, así que las sustituciones solo añaden etiquetas seguras
+  // alrededor de texto ya neutralizado: no abre ninguna vía de inyección.
+  function formatearTexto(texto) {
+    let html = escapeHtml(texto);
+    html = html.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+    html = html.replace(/(?<!\*)\*([^*]+?)\*(?!\*)/g, '<em>$1</em>');
+    html = html.replace(/`([^`]+?)`/g, '<code>$1</code>');
+    html = html.replace(/\n/g, '<br>');
+    return html;
+  }
+
   function pintarMensaje({ rol, texto, permitirGuardar }) {
     const div = document.createElement('div');
     div.className = `mensaje-chat ${rol}`;
-    div.innerHTML = `<div class="contenido">${escapeHtml(texto).replace(/\n/g, '<br>')}</div>`;
+    div.innerHTML = `<div class="contenido">${formatearTexto(texto)}</div>`;
     if (permitirGuardar) {
       const acciones = document.createElement('div');
       acciones.className = 'acciones-mensaje';

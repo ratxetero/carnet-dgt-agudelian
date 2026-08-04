@@ -128,7 +128,7 @@
       if (window.lucide) lucide.createIcons();
       // Entrada escalonada del contenido principal: motion con intención,
       // no decorativo — ayuda a leer el orden de la pantalla.
-      var nodos = document.querySelectorAll('.container > *, .container-ancho > *');
+      var nodos = document.querySelectorAll('.container > *:not(.acciones-test):not(.toast-feedback), .container-ancho > *');
       nodos.forEach(function (el, i) {
         el.classList.add('entra-escalonado');
         el.style.animationDelay = Math.min(i * 45, 300) + 'ms';

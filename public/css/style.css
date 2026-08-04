@@ -9,68 +9,94 @@
    ============================================================================= */
 
 :root {
-  /* --- Claro: marfil cálido + rosa empolvado + salmón sofisticado --- */
-  --bg: #f6efe9;
-  --surface: #fffdfb;
-  --surface-sunken: #f1e0da;
-  --border: #e6d2c8;
-  --border-strong: #d4b8ac;
+  /* --- Paleta base entregada: Black, Night Bordeaux, White Smoke,
+     Dusty Taupe, Stone Brown. Escala de marca (Night Bordeaux) 50→900,
+     aclarada donde el original no daba suficiente contraste para CTAs. --- */
+  --brand-50:  #f7e9ec;
+  --brand-100: #efd0d6;
+  --brand-200: #dea3ae;
+  --brand-300: #c97584;
+  --brand-400: #a8425a;
+  --brand-500: #7a2436; /* usado como acento interactivo: más contraste/energía que el original */
+  --brand-600: #63182a;
+  --brand-700: #49111c; /* Night Bordeaux original */
+  --brand-800: #350d15;
+  --brand-900: #23080e;
 
-  --ink: #2e2422;
-  --ink-soft: #5c4a45;
-  --muted: #8a7570;
-  --muted-soft: #b8a49d;
+  /* --- Claro --- */
+  --bg: #f2f4f3;          /* White Smoke */
+  --surface: #fbfbfa;      /* off-white, nunca blanco puro */
+  --surface-sunken: #e9e4e0; /* White Smoke + Dusty Taupe */
+  --border: #ddd5cd;
+  --border-strong: #c4b6a8; /* Dusty Taupe */
 
-  --accent: #c85f78;
-  --accent-hover: #ad4d64;
-  --accent-soft: #f3dde1;
+  --ink: #1a1615;          /* off-black (Stone Brown oscurecido), nunca negro puro */
+  --ink-soft: #4a3f37;     /* Stone Brown */
+  --muted: #7c6c5e;        /* Dusty Taupe, oscurecido para cumplir 4.5:1 AA */
+  --muted-soft: #b6ac9f;
+
+  --accent: var(--brand-500);
+  --accent-hover: var(--brand-600);
+  --accent-soft: #ecdcd8;
   --accent-ink: #ffffff;
 
-  --success: #4a7a52;
-  --success-soft: #e6ede2;
-  --danger: #b3453a;
-  --danger-soft: #f5e1dd;
-  --warning: #a3752c;
+  --success: #3f7d52;
+  --success-soft: #e3ede4;
+  --danger: #b8452e;
+  --danger-soft: #f5e3dd;
+  --warning: #a5741f;
   --warning-soft: #f6ecd9;
+  --info: #3d6d8a;
+  --info-soft: #e0eaee;
 
-  --shadow-1: 0 1px 2px rgba(46, 30, 26, 0.07);
-  --shadow-2: 0 4px 16px rgba(46, 30, 26, 0.09);
-  --shadow-3: 0 18px 44px rgba(46, 30, 26, 0.18);
+  --shadow-1: 0 1px 2px rgba(26, 22, 21, 0.07);
+  --shadow-2: 0 4px 16px rgba(26, 22, 21, 0.09);
+  --shadow-3: 0 18px 44px rgba(26, 22, 21, 0.18);
 
-  --r-sm: 6px;
-  --r-md: 9px;
-  --r-lg: 13px;
+  --r-sm: 8px;
+  --r-md: 12px;
+  --r-lg: 18px;
+  --r-full: 999px;
 
   --font: 'Instrument Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   --font-mono: 'Space Mono', ui-monospace, monospace;
 
+  --motion-fast: 150ms;
+  --motion-base: 250ms;
+  --motion-slow: 400ms;
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-in: cubic-bezier(0.7, 0, 0.84, 0);
+
+  --bottom-nav-h: 60px;
   --nav-h: 56px;
   --safe-b: env(safe-area-inset-bottom, 0px);
 }
 
 :root[data-tema="oscuro"] {
-  --bg: #211a18;
-  --surface: #2b2220;
-  --surface-sunken: #362a27;
-  --border: #4a3b36;
-  --border-strong: #5f4c45;
+  --bg: #16130f;
+  --surface: #201c18;
+  --surface-sunken: #2a2420;
+  --border: #3a332c;
+  --border-strong: #4d443a;
 
-  --ink: #f3e9e4;
-  --ink-soft: #d3c1ba;
-  --muted: #a08d86;
-  --muted-soft: #6f5f5a;
+  --ink: #f2ece5;
+  --ink-soft: #d3c5b8;
+  --muted: #a3907e;
+  --muted-soft: #6f6154;
 
-  --accent: #e08ba0;
-  --accent-hover: #eba3b5;
-  --accent-soft: #3a2b2e;
-  --accent-ink: #2a1015;
+  --accent: #c96a7c;
+  --accent-hover: #e5899a;
+  --accent-soft: #3a2226;
+  --accent-ink: #1f0d11;
 
   --success: #7fb389;
-  --success-soft: #253024;
-  --danger: #d97e72;
-  --danger-soft: #3a2420;
+  --success-soft: #223022;
+  --danger: #d97e5f;
+  --danger-soft: #3a241a;
   --warning: #d3a458;
-  --warning-soft: #362a17;
+  --warning-soft: #332812;
+  --info: #7fa8bd;
+  --info-soft: #1f2c32;
 
   --shadow-1: 0 1px 2px rgba(0,0,0,0.35);
   --shadow-2: 0 4px 14px rgba(0,0,0,0.4);
@@ -175,6 +201,7 @@ code { font-family: var(--font-mono); background: var(--surface-sunken); padding
   visibility: hidden;
 }
 .nav-mobile.abierto { transform: translateX(0); visibility: visible; }
+.nav-mobile-usuario { display: flex; align-items: center; gap: 10px; padding: 10px 12px 14px; margin-bottom: 6px; border-bottom: 1px solid var(--border); font-weight: 700; font-size: 0.9rem; color: var(--ink); }
 .nav-mobile a, .nav-mobile button {
   padding: 12px 12px; font-size: 0.92rem; color: var(--ink-soft); border-radius: var(--r-sm);
   text-align: left; background: none; border: none; font-family: inherit; cursor: pointer; min-height: 46px;
@@ -234,11 +261,12 @@ code { font-family: var(--font-mono); background: var(--surface-sunken); padding
   display: inline-flex; align-items: center; justify-content: center; gap: 7px;
   background: var(--accent); color: var(--accent-ink); border: none; border-radius: var(--r-md);
   padding: 10px 16px; font-size: 0.88rem; font-weight: 600; cursor: pointer; text-align: center;
-  transition: background 0.12s ease, transform 0.05s ease; font-family: var(--font);
-  min-height: 42px;
+  transition: background var(--motion-fast) var(--ease-out), transform var(--motion-fast) var(--ease-out), border-color var(--motion-fast) var(--ease-out);
+  min-height: 42px; font-family: var(--font);
 }
 .btn:hover { background: var(--accent-hover); text-decoration: none; color: var(--accent-ink); }
-.btn:active { transform: scale(0.98); }
+.btn:active { transform: scale(0.97); }
+.btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 .btn.secundario { background: var(--surface); color: var(--ink); border: 1px solid var(--border-strong); }
 .btn.secundario:hover { background: var(--surface-sunken); border-color: var(--accent); color: var(--accent); }
 .btn.fantasma { background: transparent; color: var(--ink-soft); border: 1px solid var(--border-strong); }
@@ -299,7 +327,7 @@ form.form-auth input:focus { border-color: var(--accent); outline: none; }
 .modo-selector { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px,1fr)); gap: 10px; margin: 14px 0; }
 .modo-card {
   border: 1px solid var(--border); border-radius: var(--r-md); padding: 14px 15px; cursor: pointer;
-  background: var(--surface); transition: border-color 0.12s, box-shadow 0.12s;
+  background: var(--surface); transition: border-color var(--motion-fast) var(--ease-out), box-shadow var(--motion-fast) var(--ease-out), transform var(--motion-fast) var(--ease-out);
 }
 .modo-card:hover { border-color: var(--accent); box-shadow: var(--shadow-1); }
 .modo-card.selected { border-color: var(--accent); background: var(--accent-soft); }
@@ -378,7 +406,7 @@ textarea, input[type="text"], input[type="email"], input[type="password"] { font
 .opcion {
   display: flex; align-items: center; gap: 11px; width: 100%; text-align: left; padding: 12px 14px;
   margin-bottom: 8px; border: 1px solid var(--border); border-radius: var(--r-md); background: var(--surface);
-  font-size: 0.92rem; font-family: var(--font); cursor: pointer; transition: all 0.1s; min-height: 46px;
+  font-size: 0.92rem; font-family: var(--font); cursor: pointer; transition: border-color var(--motion-fast) var(--ease-out), background var(--motion-fast) var(--ease-out); min-height: 46px;
   color: var(--ink);
 }
 .opcion:hover:not(:disabled) { border-color: var(--accent); background: var(--accent-soft); }
@@ -386,7 +414,12 @@ textarea, input[type="text"], input[type="email"], input[type="password"] { font
 .opcion.incorrecta { border-color: var(--danger); background: var(--danger-soft); }
 .opcion:disabled { cursor: default; }
 
-.feedback { margin: 12px 0; padding: 10px 13px; border-radius: var(--r-sm); font-weight: 600; font-size: 0.88rem; display: flex; align-items: center; gap: 7px; }
+.feedback {
+  margin: 12px 0; padding: 10px 13px; border-radius: var(--r-sm); font-weight: 600; font-size: 0.88rem;
+  display: flex; align-items: center; gap: 7px; min-height: 40px;
+  animation: feedback-entra var(--motion-base) var(--ease-out);
+}
+@keyframes feedback-entra { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: translateY(0); } }
 .feedback.correcta { background: var(--success-soft); color: var(--success); }
 .feedback.incorrecta { background: var(--danger-soft); color: var(--danger); }
 
@@ -394,8 +427,18 @@ textarea, input[type="text"], input[type="email"], input[type="password"] { font
 .explicacion-box strong { color: var(--warning); }
 .explicacion-box hr { border: none; border-top: 1px solid color-mix(in srgb, var(--warning) 25%, transparent); margin: 8px 0; }
 
-.acciones-test { display: flex; justify-content: space-between; margin-top: 16px; gap: 8px; flex-wrap: wrap; padding-bottom: var(--safe-b); }
-.acciones-test .btn { min-width: 100px; flex: 1; }
+.acciones-test {
+  display: flex; justify-content: space-between; gap: 8px;
+  position: fixed; left: 50%; transform: translateX(-50%); bottom: 0; z-index: 45;
+  width: 100%; max-width: 900px;
+  background: var(--surface); border-top: 1px solid var(--border);
+  padding: 12px 16px calc(12px + var(--safe-b)); box-shadow: 0 -4px 16px rgba(26,22,21,0.06);
+}
+.acciones-test .btn { min-width: 100px; flex: 1; max-width: 260px; }
+/* El contenedor del test reserva espacio abajo para que el contenido nunca
+   quede oculto detrás de la barra fija de acciones (el bug que empujaba el
+   botón "Siguiente" fuera de pantalla). */
+body.pantalla-test .container { padding-bottom: calc(84px + var(--safe-b)); }
 
 .btn-experto { background: var(--surface); color: var(--accent); border: 1px solid var(--accent); }
 .btn-experto:hover { background: var(--accent-soft); color: var(--accent); }
@@ -505,10 +548,14 @@ img { max-width: 100%; }
 
 /* --------------------------------- Responsive --------------------------------- */
 
+/* --------------------------------- Bottom nav (móvil) --------------------------------- */
+
+.bottom-nav { display: none; }
+
 @media (max-width: 720px) {
   .navbar .nav-desktop { display: none !important; }
   .nav-toggle { display: flex !important; }
-  .container, .container-ancho { padding: 16px 14px calc(64px + var(--safe-b)); }
+  .container, .container-ancho { padding: 16px 14px calc(var(--bottom-nav-h) + 20px + var(--safe-b)); }
   h1 { font-size: 1.15rem; }
   .card { padding: 15px 14px; }
   form.form-auth { padding: 22px 18px; }
@@ -522,8 +569,41 @@ img { max-width: 100%; }
   .acciones-test .btn { min-width: 0; }
   .franja-indicadores { flex-wrap: wrap; }
   .franja-indicadores .indicador { flex: 1 1 45%; }
+
+  .bottom-nav {
+    display: flex; position: fixed; left: 0; right: 0; bottom: 0; z-index: 50;
+    height: calc(var(--bottom-nav-h) + var(--safe-b)); padding-bottom: var(--safe-b);
+    background: var(--surface); border-top: 1px solid var(--border);
+    box-shadow: 0 -2px 12px rgba(26,22,21,0.06);
+  }
+  .bottom-nav a {
+    flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center;
+    gap: 2px; color: var(--muted); font-size: 0.68rem; font-weight: 600; text-decoration: none;
+    min-height: 44px; transition: color var(--motion-fast) var(--ease-out);
+  }
+  .bottom-nav a .icon { width: 21px; height: 21px; stroke-width: 1.8; transition: transform var(--motion-fast) var(--ease-out); }
+  .bottom-nav a.activo { color: var(--accent); }
+  .bottom-nav a.activo .icon { transform: translateY(-1px); }
+  .bottom-nav a:active .icon { transform: scale(0.88); }
+
+  /* En la pantalla de test, la barra inferior de navegación se oculta:
+     la sustituye la barra fija de Anterior/Siguiente para no competir por
+     el mismo espacio ni confundir al usuario en un momento de foco. */
+  body.pantalla-test .bottom-nav { display: none; }
+  body.pantalla-test .container { padding-bottom: calc(84px + var(--safe-b)); }
 }
 
 @media (max-width: 480px) {
   .modo-selector { grid-template-columns: 1fr; }
+}
+
+/* --------------------------------- Motion / accesibilidad --------------------------------- */
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
 }

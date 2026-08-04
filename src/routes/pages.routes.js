@@ -5,6 +5,7 @@ const db = require('../db/connection');
 const { requireAuth } = require('../middleware/auth');
 const statsService = require('../services/statsService');
 const testService = require('../services/testService');
+const backupService = require('../services/backupService');
 
 const router = express.Router();
 
@@ -66,6 +67,41 @@ router.get('/test/nuevo', requireAuth, (req, res) => {
 
 router.get('/stats', requireAuth, (req, res) => {
   res.render('stats');
+});
+
+// Fuerza una copia de seguridad inmediata en Turso. Pensada para visitarla
+// tú mismo, logueado, justo ANTES de hacer un `git push` — así te asegura
+// que Turso tiene la última versión antes de que Render mate el proceso
+// viejo, en vez de depender de que el respaldo automático al apagarse
+// tenga tiempo de completarse.
+router.get('/respaldar-ahora', requireAuth, async (req, res) => {
+  if (!backupService.habilitado()) {
+    return res.status(400).send(`
+      <!DOCTYPE html><html><body style="font-family:sans-serif; max-width:480px; margin:60px auto; text-align:center; color:#b3453a;">
+        <h1>⚠️ Turso no está configurado</h1>
+        <p>No hay TURSO_DATABASE_URL / TURSO_AUTH_TOKEN en las variables de entorno, así que no hay nada que respaldar.</p>
+      </body></html>
+    `);
+  }
+  try {
+    await backupService.respaldar();
+    res.send(`
+      <!DOCTYPE html><html><body style="font-family:sans-serif; max-width:480px; margin:60px auto; text-align:center;">
+        <h1 style="color:#4a7a52;">✅ Copia de seguridad completada</h1>
+        <p>Turso ya tiene la última versión de la base de datos y las sesiones.</p>
+        <p><strong>Ya puedes hacer git push con tranquilidad.</strong></p>
+        <p><a href="/">Volver al inicio</a></p>
+      </body></html>
+    `);
+  } catch (err) {
+    res.status(500).send(`
+      <!DOCTYPE html><html><body style="font-family:sans-serif; max-width:480px; margin:60px auto; text-align:center; color:#b3453a;">
+        <h1>❌ Error al respaldar</h1>
+        <p>${err.message}</p>
+        <p>No pushees todavía: reintenta esta página hasta que salga la confirmación en verde.</p>
+      </body></html>
+    `);
+  }
 });
 
 module.exports = router;

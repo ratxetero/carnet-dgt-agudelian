@@ -20,8 +20,8 @@
           <button type="submit" class="link-button"><i data-lucide="log-out" class="icon icon-sm"></i></button>
         </form>
       </div>
-      <button type="button" class="nav-toggle" id="btn-nav-toggle" aria-label="Abrir menú" aria-expanded="false" aria-controls="nav-mobile">
-        <i data-lucide="menu" class="icon" id="icono-nav-toggle"></i>
+      <button type="button" class="nav-toggle" id="btn-nav-toggle" aria-label="Más opciones" aria-expanded="false" aria-controls="nav-mobile">
+        <i data-lucide="more-vertical" class="icon" id="icono-nav-toggle"></i>
       </button>
     </div>
   <% } else { %>
@@ -31,17 +31,26 @@
     </button>
   <% } %>
 </header>
+
 <% if (user) { %>
+  <!-- Navegación principal en móvil: barra inferior fija con icono + etiqueta,
+       siempre accesible con el pulgar, sin depender de hover. Se oculta
+       durante el test para no competir con la barra de acciones fija. -->
+  <nav class="bottom-nav" aria-label="Navegación principal">
+    <a href="/" class="<%= rutaActual === '/' ? 'activo' : '' %>"><i data-lucide="home" class="icon"></i><span>Inicio</span></a>
+    <a href="/test/nuevo" class="<%= rutaActual && rutaActual.startsWith('/test/nuevo') ? 'activo' : '' %>"><i data-lucide="square-pen" class="icon"></i><span>Test</span></a>
+    <a href="/cuaderno" class="<%= rutaActual && rutaActual.startsWith('/cuaderno') ? 'activo' : '' %>"><i data-lucide="notebook-text" class="icon"></i><span>Cuaderno</span></a>
+    <a href="/manual" class="<%= rutaActual === '/manual' ? 'activo' : '' %>"><i data-lucide="book-open" class="icon"></i><span>Manual</span></a>
+    <a href="/stats" class="<%= rutaActual === '/stats' ? 'activo' : '' %>"><i data-lucide="bar-chart-3" class="icon"></i><span>Stats</span></a>
+  </nav>
+
   <div class="nav-backdrop" id="nav-backdrop"></div>
   <nav class="nav-mobile" id="nav-mobile" aria-hidden="true">
-    <a href="/"><i data-lucide="home" class="icon"></i> Inicio</a>
-    <a href="/test/nuevo"><i data-lucide="square-pen" class="icon"></i> Nuevo test</a>
-    <a href="/cuaderno"><i data-lucide="notebook-text" class="icon"></i> Cuaderno</a>
-    <a href="/manual"><i data-lucide="book-open" class="icon"></i> Manual</a>
-    <a href="/stats"><i data-lucide="bar-chart-3" class="icon"></i> Estadísticas</a>
+    <div class="nav-mobile-usuario"><span class="avatar"><%= user.username.charAt(0).toUpperCase() %></span> <%= user.username %></div>
+    <button type="button" data-theme-toggle><i data-lucide="sun" class="icon icono-sol"></i><i data-lucide="moon" class="icon icono-luna"></i> Cambiar tema</button>
     <form method="POST" action="/logout">
       <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
-      <button type="submit"><i data-lucide="log-out" class="icon"></i> Cerrar sesión (<%= user.username %>)</button>
+      <button type="submit"><i data-lucide="log-out" class="icon"></i> Cerrar sesión</button>
     </form>
   </nav>
 <% } %>
@@ -65,7 +74,7 @@
       if (backdrop) backdrop.classList.remove('abierto');
       menu.setAttribute('aria-hidden', 'true');
       btnNav.setAttribute('aria-expanded', 'false');
-      if (icono) icono.setAttribute('data-lucide', 'menu');
+      if (icono) icono.setAttribute('data-lucide', 'more-vertical');
       if (window.lucide) lucide.createIcons();
     }
 
@@ -75,21 +84,15 @@
         var abierto = menu.classList.contains('abierto');
         if (abierto) cerrarMenu(); else abrirMenu();
       });
-
-      // Cerrar al elegir cualquier opción del menú
-      menu.querySelectorAll('a, button').forEach(function (el) {
-        el.addEventListener('click', cerrarMenu);
+      menu.querySelectorAll('a, button[type="submit"], button[data-theme-toggle]').forEach(function (el) {
+        el.addEventListener('click', function () { setTimeout(cerrarMenu, 80); });
       });
-
-      // Cerrar al tocar el fondo oscurecido o cualquier zona fuera del menú
       if (backdrop) backdrop.addEventListener('click', cerrarMenu);
       document.addEventListener('click', function (e) {
         if (menu.classList.contains('abierto') && !menu.contains(e.target) && e.target !== btnNav && !btnNav.contains(e.target)) {
           cerrarMenu();
         }
       });
-
-      // Cerrar con la tecla Escape
       document.addEventListener('keydown', function (e) {
         if (e.key === 'Escape' && menu.classList.contains('abierto')) cerrarMenu();
       });

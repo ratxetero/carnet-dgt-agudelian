@@ -1,41 +1,46 @@
-<header class="navbar">
-  <a class="brand" href="/"><img src="/images/marca/logo-gato.png" alt="Logo" class="marca-img" /> Test teórico Alejandro</a>
-  <% if (user) { %>
-    <nav class="nav-desktop">
+<% if (user) { %>
+
+  <!-- ESCRITORIO: sidebar fija a la izquierda, no una barra horizontal -->
+  <aside class="sidebar">
+    <a class="sidebar-brand" href="/"><img src="/images/marca/logo-gato.png" alt="Logo" /><span>Test teórico<br>Alejandro</span></a>
+    <nav class="sidebar-nav">
       <a href="/" class="<%= rutaActual === '/' ? 'activo' : '' %>"><i data-lucide="home" class="icon"></i> Inicio</a>
-      <a href="/test/nuevo" class="<%= rutaActual && rutaActual.startsWith('/test/nuevo') ? 'activo' : '' %>"><i data-lucide="square-pen" class="icon"></i> Test</a>
+      <a href="/test/nuevo" class="<%= rutaActual && rutaActual.startsWith('/test/nuevo') ? 'activo' : '' %>"><i data-lucide="square-pen" class="icon"></i> Nuevo test</a>
       <a href="/cuaderno" class="<%= rutaActual && rutaActual.startsWith('/cuaderno') ? 'activo' : '' %>"><i data-lucide="notebook-text" class="icon"></i> Cuaderno</a>
       <a href="/manual" class="<%= rutaActual === '/manual' ? 'activo' : '' %>"><i data-lucide="book-open" class="icon"></i> Manual</a>
       <a href="/stats" class="<%= rutaActual === '/stats' ? 'activo' : '' %>"><i data-lucide="bar-chart-3" class="icon"></i> Estadísticas</a>
     </nav>
-    <div class="nav-right">
+    <div class="sidebar-footer">
+      <button type="button" class="theme-toggle" data-theme-toggle aria-label="Cambiar tema claro/oscuro">
+        <i data-lucide="sun" class="icon icono-sol"></i>
+        <i data-lucide="moon" class="icon icono-luna"></i>
+        <span>Tema</span>
+      </button>
+      <div class="sidebar-usuario">
+        <span class="avatar"><%= user.username.charAt(0).toUpperCase() %></span>
+        <span class="sidebar-usuario-nombre"><%= user.username %></span>
+        <form method="POST" action="/logout">
+          <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
+          <button type="submit" class="link-button" aria-label="Cerrar sesión"><i data-lucide="log-out" class="icon icon-sm"></i></button>
+        </form>
+      </div>
+    </div>
+  </aside>
+
+  <!-- MÓVIL: franja mínima superior (solo marca + tema + más), navegación real abajo -->
+  <header class="franja-movil">
+    <a class="franja-movil-brand" href="/"><img src="/images/marca/logo-gato.png" alt="Logo" /></a>
+    <div class="franja-movil-acciones">
       <button type="button" class="theme-toggle" data-theme-toggle aria-label="Cambiar tema claro/oscuro">
         <i data-lucide="sun" class="icon icono-sol"></i>
         <i data-lucide="moon" class="icon icono-luna"></i>
       </button>
-      <div class="nav-desktop">
-        <span class="avatar" title="<%= user.username %>"><%= user.username.charAt(0).toUpperCase() %></span>
-        <form method="POST" action="/logout">
-          <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
-          <button type="submit" class="link-button"><i data-lucide="log-out" class="icon icon-sm"></i></button>
-        </form>
-      </div>
       <button type="button" class="nav-toggle" id="btn-nav-toggle" aria-label="Más opciones" aria-expanded="false" aria-controls="nav-mobile">
         <i data-lucide="more-vertical" class="icon" id="icono-nav-toggle"></i>
       </button>
     </div>
-  <% } else { %>
-    <button type="button" class="theme-toggle" data-theme-toggle aria-label="Cambiar tema claro/oscuro">
-      <i data-lucide="sun" class="icon icono-sol"></i>
-      <i data-lucide="moon" class="icon icono-luna"></i>
-    </button>
-  <% } %>
-</header>
+  </header>
 
-<% if (user) { %>
-  <!-- Navegación principal en móvil: barra inferior fija con icono + etiqueta,
-       siempre accesible con el pulgar, sin depender de hover. Se oculta
-       durante el test para no competir con la barra de acciones fija. -->
   <nav class="bottom-nav" aria-label="Navegación principal">
     <a href="/" class="<%= rutaActual === '/' ? 'activo' : '' %>"><i data-lucide="home" class="icon"></i><span>Inicio</span></a>
     <a href="/test/nuevo" class="<%= rutaActual && rutaActual.startsWith('/test/nuevo') ? 'activo' : '' %>"><i data-lucide="square-pen" class="icon"></i><span>Test</span></a>
@@ -47,13 +52,22 @@
   <div class="nav-backdrop" id="nav-backdrop"></div>
   <nav class="nav-mobile" id="nav-mobile" aria-hidden="true">
     <div class="nav-mobile-usuario"><span class="avatar"><%= user.username.charAt(0).toUpperCase() %></span> <%= user.username %></div>
-    <button type="button" data-theme-toggle><i data-lucide="sun" class="icon icono-sol"></i><i data-lucide="moon" class="icon icono-luna"></i> Cambiar tema</button>
     <form method="POST" action="/logout">
       <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
       <button type="submit"><i data-lucide="log-out" class="icon"></i> Cerrar sesión</button>
     </form>
   </nav>
+
+<% } else { %>
+  <header class="franja-movil franja-movil-publica">
+    <span></span>
+    <button type="button" class="theme-toggle" data-theme-toggle aria-label="Cambiar tema claro/oscuro">
+      <i data-lucide="sun" class="icon icono-sol"></i>
+      <i data-lucide="moon" class="icon icono-luna"></i>
+    </button>
+  </header>
 <% } %>
+
 <script>
   (function () {
     var btnNav = document.getElementById('btn-nav-toggle');
@@ -81,34 +95,44 @@
     if (btnNav && menu) {
       btnNav.addEventListener('click', function (e) {
         e.stopPropagation();
-        var abierto = menu.classList.contains('abierto');
-        if (abierto) cerrarMenu(); else abrirMenu();
+        if (menu.classList.contains('abierto')) cerrarMenu(); else abrirMenu();
       });
-      menu.querySelectorAll('a, button[type="submit"], button[data-theme-toggle]').forEach(function (el) {
+      menu.querySelectorAll('a, button').forEach(function (el) {
         el.addEventListener('click', function () { setTimeout(cerrarMenu, 80); });
       });
       if (backdrop) backdrop.addEventListener('click', cerrarMenu);
       document.addEventListener('click', function (e) {
-        if (menu.classList.contains('abierto') && !menu.contains(e.target) && e.target !== btnNav && !btnNav.contains(e.target)) {
-          cerrarMenu();
-        }
+        if (menu.classList.contains('abierto') && !menu.contains(e.target) && e.target !== btnNav && !btnNav.contains(e.target)) cerrarMenu();
       });
       document.addEventListener('keydown', function (e) {
         if (e.key === 'Escape' && menu.classList.contains('abierto')) cerrarMenu();
       });
     }
 
+    // Cambio de tema con transición real de color (no un salto seco): se
+    // marca la raíz como "en transición" durante un instante para que las
+    // superficies crucen de valor con easing, y se retira después.
     document.querySelectorAll('[data-theme-toggle]').forEach(function (btn) {
       btn.addEventListener('click', function () {
-        var actual = document.documentElement.getAttribute('data-tema');
+        var raiz = document.documentElement;
+        raiz.classList.add('cambiando-tema');
+        var actual = raiz.getAttribute('data-tema');
         var nuevo = actual === 'oscuro' ? 'claro' : 'oscuro';
-        document.documentElement.setAttribute('data-tema', nuevo);
+        raiz.setAttribute('data-tema', nuevo);
         try { localStorage.setItem('tema', nuevo); } catch (e) {}
+        setTimeout(function () { raiz.classList.remove('cambiando-tema'); }, 400);
       });
     });
 
     document.addEventListener('DOMContentLoaded', function () {
       if (window.lucide) lucide.createIcons();
+      // Entrada escalonada del contenido principal: motion con intención,
+      // no decorativo — ayuda a leer el orden de la pantalla.
+      var nodos = document.querySelectorAll('.container > *, .container-ancho > *');
+      nodos.forEach(function (el, i) {
+        el.classList.add('entra-escalonado');
+        el.style.animationDelay = Math.min(i * 45, 300) + 'ms';
+      });
     });
   })();
 </script>

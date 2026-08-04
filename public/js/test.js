@@ -55,6 +55,20 @@
   const btnAnterior = document.getElementById('btn-anterior');
   const btnSiguiente = document.getElementById('btn-siguiente');
   const cronometroEl = document.getElementById('cronometro');
+  const toastFeedback = document.getElementById('toast-feedback');
+  let temporizadorToast = null;
+
+  function mostrarToastFeedback(esCorrecta) {
+    clearTimeout(temporizadorToast);
+    toastFeedback.className = 'toast-feedback visible ' + (esCorrecta ? 'correcta' : 'incorrecta');
+    toastFeedback.innerHTML = `<i data-lucide="${esCorrecta ? 'check-circle-2' : 'x-circle'}" class="icon"></i> ${esCorrecta ? '¡Correcto!' : 'Incorrecto'}`;
+    if (window.lucide) lucide.createIcons();
+    temporizadorToast = setTimeout(() => { toastFeedback.classList.remove('visible'); }, 2600);
+  }
+  function ocultarToastFeedback() {
+    clearTimeout(temporizadorToast);
+    toastFeedback.classList.remove('visible');
+  }
 
   function actualizarCronometro() {
     const segundos = Math.floor((Date.now() - inicio) / 1000);
@@ -108,9 +122,6 @@
     });
     html += '</div>';
 
-    if (respuesta) {
-      html += `<div class="feedback ${respuesta.esCorrecta ? 'correcta' : 'incorrecta'}"><i data-lucide="${respuesta.esCorrecta ? 'check-circle-2' : 'x-circle'}" class="icon"></i> ${respuesta.esCorrecta ? '¡Correcto!' : 'Incorrecto'}</div>`;
-    }
     html += `<div style="display:flex; gap:8px; flex-wrap:wrap; margin-top:8px;">`;
     html += `<button type="button" class="btn secundario" id="btn-guardar-nota"><i data-lucide="sticky-note" class="icon"></i> Guardar en notas</button>`;
     if (respuesta) {
@@ -120,6 +131,9 @@
 
     zonaPregunta.innerHTML = html;
     if (window.lucide) lucide.createIcons();
+
+    if (respuesta) mostrarToastFeedback(respuesta.esCorrecta);
+    else ocultarToastFeedback();
 
     zonaPregunta.querySelectorAll('.opcion').forEach((btn) => {
       btn.addEventListener('click', () => responder(p, Number(btn.dataset.opcionId)));

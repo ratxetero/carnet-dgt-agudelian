@@ -1,61 +1,35 @@
 <!DOCTYPE html>
 <html lang="es">
 <head><%- include('partials/head', { titulo: 'Nuevo test' }) %></head>
-<body>
+<body class="pantalla-pasos">
   <%- include('partials/nav') %>
-  <div class="container">
-    <div class="eyebrow">Tipos de test</div>
-    <h1>Elige el tipo de test</h1>
+
+  <!-- Flujo por pasos: una decisión por pantalla, sin scroll de página. -->
+  <div class="paso-shell">
+    <header class="paso-cabecera">
+      <button type="button" class="btn-hud" id="btn-paso-atras" aria-label="Paso anterior"><i data-lucide="arrow-left" class="icon-sm"></i></button>
+      <div class="titulos">
+        <span class="paso-contador" id="paso-contador">Paso 1 de 2</span>
+        <span class="paso-titulo" id="paso-titulo">Tipo de test</span>
+      </div>
+      <a class="btn-hud salir" href="/" aria-label="Salir" title="Salir"><i data-lucide="x" class="icon-sm"></i></a>
+    </header>
+
+    <div class="paso-progreso" id="paso-progreso" aria-hidden="true"></div>
+
     <% if (error) { %><div class="errores"><i data-lucide="alert-octagon" class="icon"></i> <%= error %></div><% } %>
 
-    <form method="POST" action="/test/iniciar" id="form-nuevo-test">
+    <form method="POST" action="/test/iniciar" id="form-nuevo-test" style="display:contents;">
       <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
       <input type="hidden" name="tipo" id="input-tipo" />
       <input type="hidden" name="bloque_id" id="input-bloque-id" />
       <input type="hidden" name="tema_id" id="input-tema-id" />
 
-      <div class="modo-selector">
-        <div class="modo-card" data-tipo="aleatorio">
-          <h3><i data-lucide="shuffle" class="icon"></i> Test aleatorio</h3>
-          <p>30 preguntas de todo el temario, formato simulacro oficial.</p>
-        </div>
-        <div class="modo-card" data-tipo="tema">
-          <h3><i data-lucide="book-open" class="icon"></i> Test por tema</h3>
-          <p>Elige un tema y un bloque de hasta 30 preguntas de ese tema.</p>
-        </div>
-        <div class="modo-card" data-tipo="oficial">
-          <h3><i data-lucide="clipboard-check" class="icon"></i> Simulacro oficial</h3>
-          <p>30 preguntas reales agrupadas en el formato del examen oficial DGT.</p>
-        </div>
-        <div class="modo-card" data-tipo="repaso">
-          <h3><i data-lucide="rotate-ccw" class="icon"></i> Repaso de fallos</h3>
-          <p>Repite las preguntas que has fallado antes (<%= totalFallos %> en total).</p>
-        </div>
-      </div>
+      <div class="paso-cuerpo" id="paso-cuerpo"></div>
 
-      <!-- Test por tema: paso 1 = elegir tema, paso 2 = elegir bloque de ese tema -->
-      <div id="panel-tema" style="display:none;">
-        <h2 class="mt-2">1. Elige un tema</h2>
-        <div class="modo-selector" id="grid-temas"></div>
-        <div id="paso-bloques" style="display:none;">
-          <h2 class="mt-2">2. Elige el test</h2>
-          <div class="modo-selector" id="grid-bloques"></div>
-        </div>
-      </div>
-
-      <!-- Simulacro oficial: elegir directamente uno de los generados -->
-      <div id="panel-oficial" style="display:none;">
-        <h2 class="mt-2">Elige un simulacro</h2>
-        <div class="modo-selector" id="grid-simulacros"></div>
-      </div>
-
-      <!-- Repaso de fallos: elegir "todos" o un tema concreto -->
-      <div id="panel-repaso" style="display:none;">
-        <h2 class="mt-2">¿Repasar todo o un tema concreto?</h2>
-        <div class="modo-selector" id="grid-repaso"></div>
-      </div>
-
-      <button type="submit" class="btn grande mt-2" id="btn-empezar" disabled>Selecciona una opción para empezar</button>
+      <footer class="paso-pie">
+        <button type="submit" class="btn grande" id="btn-empezar" disabled>Elige una opción</button>
+      </footer>
     </form>
   </div>
 

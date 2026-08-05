@@ -1,188 +1,162 @@
 // public/js/stats.js
+// Estadísticas sin librerías de gráficos: todo son barras de energía y números
+// del propio sistema visual. Antes se dependía de Chart.js por CDN — si tardaba
+// o no cargaba, los canvas quedaban vacíos y la página parecía rota.
+//
+// Además la carga es progresiva: el resumen (consulta rápida) se pinta en cuanto
+// llega, y el desglose por tema y los simulacros entran después sin bloquear.
+
 (function () {
-  function variableCss(nombre) {
-    return getComputedStyle(document.documentElement).getPropertyValue(nombre).trim();
+  const $ = (id) => document.getElementById(id);
+
+  function mostrarVacio(mostrar) {
+    if ($('stats-vacio')) $('stats-vacio').style.display = mostrar ? 'block' : 'none';
+    if ($('stats-contenido')) $('stats-contenido').style.display = mostrar ? 'none' : 'block';
   }
 
-  function crearDonut(canvasId, { valores, etiquetas, colores, centro }) {
-    const ctx = document.getElementById(canvasId);
-    if (!ctx || typeof Chart === 'undefined') return;
-    const total = valores.reduce((a, b) => a + b, 0);
-    const datosFinales = total > 0 ? valores : [1];
-    const coloresFinales = total > 0 ? colores : [variableCss('--border')];
-
-    new Chart(ctx, {
-      type: 'doughnut',
-      data: { labels: etiquetas, datasets: [{ data: datosFinales, backgroundColor: coloresFinales, borderWidth: 0 }] },
-      options: {
-        responsive: true,
-        maintainAspectRatio: true,
-        cutout: '72%',
-        plugins: { legend: { display: false }, tooltip: { enabled: total > 0 } },
-      },
-      plugins: [{
-        id: `texto-central-${canvasId}`,
-        afterDraw(chart) {
-          const { ctx: c, chartArea: { left, right, top, bottom } } = chart;
-          const x = (left + right) / 2;
-          const y = (top + bottom) / 2;
-          c.save();
-          c.textAlign = 'center';
-          c.textBaseline = 'middle';
-          c.font = "700 1.35rem 'Space Mono', monospace";
-          c.fillStyle = variableCss('--ink');
-          c.fillText(centro.valor, x, y - 8);
-          c.font = "600 0.68rem 'Instrument Sans', sans-serif";
-          c.fillStyle = variableCss('--muted');
-          c.fillText(centro.etiqueta, x, y + 12);
-          c.restore();
-        },
-      }],
-    });
-  }
-
-  function crearLeyenda(contenedorId, items) {
-    const el = document.getElementById(contenedorId);
+  function mostrarError(mensaje) {
+    const el = $('stats-error');
     if (!el) return;
-    el.innerHTML = items
-      .map((it) => `<span class="leyenda-item"><span class="punto" style="background:${it.color}"></span>${it.texto}</span>`)
+    el.innerHTML = '<i data-lucide="alert-octagon" class="icon"></i> ' + mensaje;
+    el.style.display = 'flex';
+    if (window.lucide) lucide.createIcons();
+  }
+
+  function pct(parte, total) {
+    return total > 0 ? Math.round((parte / total) * 100) : 0;
+  }
+
+  function esc(s) {
+    const d = document.createElement('div');
+    d.textContent = s == null ? '' : String(s);
+    return d.innerHTML;
+  }
+
+  // ---------------------------------------------------------------- resumen
+  function pintarResumen(r) {
+    $('v-tests').textContent = r.totalTests || 0;
+    $('v-acierto').textContent = `${r.porcentajeAcierto || 0}%`;
+    $('v-acierto-2').textContent = `${r.porcentajeAcierto || 0}%`;
+    $('v-aptos').textContent = r.totalAprobados || 0;
+    $('v-noaptos').textContent = r.totalSuspensos || 0;
+
+    const porcentaje = Number(r.porcentajeAcierto) || 0;
+    $('carga-global').style.width = `${porcentaje}%`;
+    $('barra-global').classList.toggle('baja', porcentaje < 70);
+
+    const ok = r.totalAciertos || 0;
+    const fail = r.totalFallos || 0;
+    const blanco = r.totalEnBlanco || 0;
+    const total = ok + fail + blanco;
+
+    const tramos = [
+      { clase: 'ok', valor: ok, texto: `Aciertos (${ok})`, color: 'var(--success)' },
+      { clase: 'fail', valor: fail, texto: `Fallos (${fail})`, color: 'var(--danger)' },
+      { clase: 'blanco', valor: blanco, texto: `En blanco (${blanco})`, color: 'var(--border-soft)' },
+    ];
+
+    $('reparto-respuestas').innerHTML = tramos
+      .filter((t) => t.valor > 0)
+      .map((t) => {
+        const p = pct(t.valor, total);
+        return `<div class="tramo ${t.clase}" style="width:${p}%" title="${t.texto}">${p >= 12 ? p + '%' : ''}</div>`;
+      })
+      .join('');
+
+    $('leyenda-respuestas').innerHTML = tramos
+      .map((t) => `<span class="leyenda-item"><span class="punto" style="background:${t.color}"></span>${t.texto}</span>`)
       .join('');
   }
 
-  function mostrarEstadoVacio(mostrar) {
-    const vacio = document.getElementById('stats-vacio');
-    const contenido = document.getElementById('stats-contenido');
-    if (vacio) vacio.style.display = mostrar ? 'block' : 'none';
-    if (contenido) contenido.style.display = mostrar ? 'none' : 'block';
-  }
-
-  function mostrarErrorGeneral(mensaje) {
-    const el = document.getElementById('stats-error');
-    if (!el) return;
-    el.textContent = mensaje;
-    el.style.display = 'block';
-  }
-
-  // Cada bloque se ejecuta de forma independiente: si uno falla, no se
-  // lleva por delante a los demás (antes, un solo error en cualquier punto
-  // dejaba toda la página en blanco sin ningún aviso).
-  function renderDonuts(resumen) {
-    try {
-      const accent = variableCss('--accent');
-      const success = variableCss('--success');
-      const danger = variableCss('--danger');
-      const muted = variableCss('--border-strong');
-
-      crearDonut('donut-aciertos', {
-        valores: [resumen.totalAciertos || 0, resumen.totalFallos || 0, resumen.totalEnBlanco || 0],
-        etiquetas: ['Aciertos', 'Fallos', 'En blanco'],
-        colores: [success, danger, muted],
-        centro: { valor: `${resumen.porcentajeAcierto || 0}%`, etiqueta: 'ACIERTO' },
-      });
-      crearLeyenda('leyenda-aciertos', [
-        { color: success, texto: `Aciertos (${resumen.totalAciertos || 0})` },
-        { color: danger, texto: `Fallos (${resumen.totalFallos || 0})` },
-        { color: muted, texto: `En blanco (${resumen.totalEnBlanco || 0})` },
-      ]);
-
-      crearDonut('donut-aptos', {
-        valores: [resumen.totalAprobados || 0, resumen.totalSuspensos || 0],
-        etiquetas: ['Aptos', 'No aptos'],
-        colores: [accent, danger],
-        centro: { valor: resumen.totalTests || 0, etiqueta: 'TESTS' },
-      });
-      crearLeyenda('leyenda-aptos', [
-        { color: accent, texto: `Aptos (${resumen.totalAprobados || 0})` },
-        { color: danger, texto: `No aptos (${resumen.totalSuspensos || 0})` },
-      ]);
-    } catch (e) {
-      console.error('No se pudieron dibujar los gráficos circulares:', e);
+  // ------------------------------------------------------------------ temas
+  function pintarTemas(temas) {
+    const cont = $('lista-temas');
+    if (!cont) return;
+    const conDatos = (Array.isArray(temas) ? temas : []).filter((t) => (t.respondidas || 0) > 0);
+    if (!conDatos.length) {
+      cont.innerHTML = '<p class="text-muted" style="margin:0;">Todavía no hay preguntas respondidas por tema.</p>';
+      return;
     }
+    cont.innerHTML = conDatos
+      .map((t) => {
+        const respondidas = t.respondidas || 0;
+        const aciertos = t.aciertos || 0;
+        const p = pct(aciertos, respondidas);
+        const nombre = t.tema_numero === 0
+          ? 'Sin categorizar'
+          : `Tema ${t.tema_numero} — ${esc(t.tema_nombre)}`;
+        return `<div class="fila-energia">
+          <div class="fila-cab">
+            <span class="fila-nombre">${nombre}</span>
+            <span class="fila-cifra">${aciertos}/${respondidas} · ${p}%</span>
+          </div>
+          <div class="barra-energia ${p < 70 ? 'baja' : ''}">
+            <div class="pista"><div class="carga" style="width:${p}%"></div></div>
+          </div>
+        </div>`;
+      })
+      .join('');
   }
 
-  function renderBarrasPorTema(temas) {
-    try {
-      const ctxTemas = document.getElementById('chart-temas');
-      if (!ctxTemas || typeof Chart === 'undefined' || !Array.isArray(temas)) return;
-      const success = variableCss('--success');
-      const danger = variableCss('--danger');
-      new Chart(ctxTemas, {
-        type: 'bar',
-        data: {
-          labels: temas.map((t) => `T${t.tema_numero}`),
-          datasets: [
-            { label: 'Aciertos', data: temas.map((t) => t.aciertos || 0), backgroundColor: success, borderRadius: 3 },
-            { label: 'Fallos', data: temas.map((t) => t.fallos || 0), backgroundColor: danger, borderRadius: 3 },
-          ],
-        },
-        options: {
-          responsive: true,
-          plugins: { legend: { position: 'bottom', labels: { color: variableCss('--ink-soft'), font: { size: 11 } } } },
-          scales: {
-            x: { stacked: true, grid: { display: false }, ticks: { color: variableCss('--muted') } },
-            y: { stacked: true, beginAtZero: true, grid: { color: variableCss('--border') }, ticks: { color: variableCss('--muted') } },
-          },
-        },
-      });
-    } catch (e) {
-      console.error('No se pudo dibujar el gráfico por tema:', e);
+  // -------------------------------------------------------------- oficiales
+  function pintarOficiales(oficiales) {
+    const tbody = document.querySelector('#tabla-oficiales tbody');
+    if (!tbody) return;
+    if (!Array.isArray(oficiales) || !oficiales.length) {
+      tbody.innerHTML = '<tr><td colspan="4" class="text-muted">No hay simulacros disponibles.</td></tr>';
+      return;
     }
+    tbody.innerHTML = oficiales
+      .map((o) => `<tr>
+        <td>${esc(o.examen_nombre || '—')}</td>
+        <td>${o.intentos || 0}</td>
+        <td>${o.mejor_resultado == null ? '–' : o.mejor_resultado}</td>
+        <td>${o.aprobado_alguna_vez ? '<span class="badge ok">Sí</span>' : '<span class="badge neutro">–</span>'}</td>
+      </tr>`)
+      .join('');
   }
 
-  function renderTablaOficiales(oficiales) {
-    try {
-      const tbody = document.querySelector('#tabla-oficiales tbody');
-      if (!tbody) return;
-      if (!Array.isArray(oficiales) || !oficiales.length) {
-        tbody.innerHTML = '<tr><td colspan="4" class="text-muted">No hay simulacros disponibles.</td></tr>';
-        return;
-      }
-      tbody.innerHTML = oficiales
-        .map(
-          (o) => `<tr>
-            <td>${o.examen_nombre || '—'}</td>
-            <td>${o.intentos || 0}</td>
-            <td>${o.mejor_resultado ?? '–'}</td>
-            <td>${o.aprobado_alguna_vez ? '<i data-lucide="check" class="icon-sm" style="color:var(--success);"></i>' : '—'}</td>
-          </tr>`
-        )
-        .join('');
-      if (window.lucide) lucide.createIcons();
-    } catch (e) {
-      console.error('No se pudo pintar la tabla de simulacros:', e);
-    }
+  async function json(url) {
+    const r = await fetch(url, { headers: { Accept: 'application/json' } });
+    if (!r.ok) throw new Error(`${url} respondió ${r.status}`);
+    return r.json();
   }
 
   async function iniciar() {
-    let resumen, temas, oficiales;
+    // 1) Resumen primero: decide si hay algo que mostrar y se pinta ya.
+    let resumen;
     try {
-      const respuestas = await Promise.all([
-        fetch('/api/stats/resumen'),
-        fetch('/api/stats/temas'),
-        fetch('/api/stats/oficiales'),
-      ]);
-      for (const r of respuestas) {
-        if (!r.ok) throw new Error(`El servidor respondió con un error (${r.status}).`);
-      }
-      [resumen, temas, oficiales] = await Promise.all(respuestas.map((r) => r.json()));
+      resumen = await json('/api/stats/resumen');
     } catch (e) {
-      console.error('Error cargando estadísticas', e);
-      mostrarEstadoVacio(false);
-      mostrarErrorGeneral('No se han podido cargar tus estadísticas. Comprueba tu conexión y recarga la página.');
+      console.error(e);
+      mostrarVacio(false);
+      mostrarError('No se han podido cargar tus estadísticas. Comprueba la conexión y recarga.');
       return;
     }
 
-    // Si todavía no hay ningún test completado, mostramos un estado vacío
-    // útil en vez de una pantalla sin contenido.
     if (!resumen || !resumen.totalTests) {
-      mostrarEstadoVacio(true);
+      mostrarVacio(true);
       return;
     }
-    mostrarEstadoVacio(false);
+    mostrarVacio(false);
+    pintarResumen(resumen);
 
-    renderDonuts(resumen);
-    renderBarrasPorTema(temas);
-    renderTablaOficiales(oficiales);
+    // 2) El resto en paralelo, cada uno independiente: si uno falla o tarda,
+    //    no arrastra al otro ni deja la pantalla a medias.
+    json('/api/stats/temas')
+      .then(pintarTemas)
+      .catch((e) => {
+        console.error(e);
+        $('lista-temas').innerHTML = '<p class="text-muted" style="margin:0;">No se ha podido cargar el desglose por tema.</p>';
+      });
+
+    json('/api/stats/oficiales')
+      .then(pintarOficiales)
+      .catch((e) => {
+        console.error(e);
+        const tbody = document.querySelector('#tabla-oficiales tbody');
+        if (tbody) tbody.innerHTML = '<tr><td colspan="4" class="text-muted">No se han podido cargar los simulacros.</td></tr>';
+      });
   }
 
   iniciar();

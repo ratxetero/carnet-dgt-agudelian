@@ -1,225 +1,267 @@
 // public/js/test-nuevo.js
-// Renderiza dinámicamente las tarjetas de: temas, bloques por tema,
-// simulacros oficiales y temas para repaso — sin ningún <select>.
+// Elección del test como flujo por pasos: una decisión por pantalla, con
+// cabecera ("Paso 2 de 3"), botón atrás y un único botón de acción abajo.
+// No cambia el contrato con el servidor: se rellenan los mismos hidden inputs
+// (tipo, bloque_id, tema_id) del mismo formulario POST /test/iniciar.
 
 (function () {
   const TEMAS = window.__TEMAS__ || [];
   const BLOQUES_POR_TEMA = window.__BLOQUES_POR_TEMA__ || {};
   const SIMULACROS = window.__SIMULACROS__ || [];
+  const TOTAL_FALLOS = window.__TOTAL_FALLOS__ || 0;
 
   const inputTipo = document.getElementById('input-tipo');
   const inputBloqueId = document.getElementById('input-bloque-id');
   const inputTemaId = document.getElementById('input-tema-id');
   const btnEmpezar = document.getElementById('btn-empezar');
+  const btnAtras = document.getElementById('btn-paso-atras');
+  const cuerpo = document.getElementById('paso-cuerpo');
+  const elContador = document.getElementById('paso-contador');
+  const elTitulo = document.getElementById('paso-titulo');
+  const elProgreso = document.getElementById('paso-progreso');
 
-  const paneles = {
-    tema: document.getElementById('panel-tema'),
-    oficial: document.getElementById('panel-oficial'),
-    repaso: document.getElementById('panel-repaso'),
+  const TIPOS = {
+    aleatorio: { titulo: 'Test aleatorio', sub: '30 preguntas de todo el temario, formato del examen oficial.', icono: 'shuffle', pasos: 2 },
+    tema: { titulo: 'Test por tema', sub: 'Elige un tema y uno de sus tests.', icono: 'book-open', pasos: 3 },
+    oficial: { titulo: 'Simulacro oficial', sub: '30 preguntas reales agrupadas como en el examen DGT.', icono: 'clipboard-check', pasos: 2 },
+    repaso: { titulo: 'Repaso de fallos', sub: `Repite lo que has fallado (${TOTAL_FALLOS} en total).`, icono: 'rotate-ccw', pasos: 2 },
   };
 
-  function numPreguntasSeguro(valor) {
-    return Number.isFinite(Number(valor)) ? Number(valor) : 0;
+  // Estado del flujo
+  let paso = 1;
+  let tipo = null;
+  let temaElegido = null;
+
+  function num(v) { return Number.isFinite(Number(v)) ? Number(v) : 0; }
+  function esc(s) {
+    const d = document.createElement('div');
+    d.textContent = s == null ? '' : String(s);
+    return d.innerHTML;
   }
 
-  function limpiarSeleccionInterna() {
-    inputBloqueId.value = '';
-    inputTemaId.value = '';
-    btnEmpezar.disabled = true;
-    btnEmpezar.textContent = 'Selecciona una opción para empezar';
+  function totalPasos() { return tipo ? TIPOS[tipo].pasos : 2; }
+
+  function pintarProgreso() {
+    const total = totalPasos();
+    let html = '';
+    for (let i = 1; i <= total; i++) {
+      html += `<span class="${i < paso ? 'hecho' : i === paso ? 'activo' : ''}"></span>`;
+    }
+    elProgreso.innerHTML = html;
+    elContador.textContent = `Paso ${paso} de ${total}`;
+    btnAtras.disabled = paso === 1;
+    btnAtras.style.visibility = paso === 1 ? 'hidden' : 'visible';
   }
 
-  function miniProgreso(porcentaje) {
-    return `<div class="progreso-bar" style="height:8px; margin:8px 0 0;">
-      <div class="relleno" style="width:${porcentaje}%;"></div>
-    </div><div class="text-muted" style="font-size:0.78rem;">${porcentaje}% completado</div>`;
+  function accion(texto, activo) {
+    btnEmpezar.disabled = !activo;
+    btnEmpezar.textContent = texto;
   }
 
-  function estadoBloqueHtml(progreso) {
+  function fila({ titulo, sub, marca, extra, disabled, seleccionada, onClick }) {
+    const b = document.createElement('button');
+    b.type = 'button';
+    b.className = 'fila-opcion' + (seleccionada ? ' selected' : '');
+    b.disabled = !!disabled;
+    b.innerHTML =
+      `<span class="marca">${marca || ''}</span>` +
+      `<span class="texto"><strong>${titulo}</strong><span>${sub || ''}</span>${extra || ''}</span>` +
+      `<i data-lucide="chevron-right" class="icon chevron"></i>`;
+    if (!disabled && onClick) b.addEventListener('click', onClick);
+    return b;
+  }
+
+  function barraMini(porcentaje) {
+    return `<span class="mini-barra barra-energia" style="display:block;">
+      <span class="pista" style="display:block;"><span class="carga" style="width:${porcentaje}%"></span></span>
+    </span>`;
+  }
+
+  function estadoBloque(progreso) {
     if (!progreso || progreso.estado === 'nuevo') return '';
-    if (progreso.estado === 'en_progreso') return miniProgreso(progreso.porcentaje);
+    if (progreso.estado === 'en_progreso') return barraMini(progreso.porcentaje);
     if (progreso.estado === 'completado') {
-      const badge = progreso.aprobado ? 'ok' : 'fail';
+      const clase = progreso.aprobado ? 'ok' : 'fail';
       const texto = progreso.aprobado ? 'Apto' : 'No apto';
-      return `<div class="mt-1"><span class="badge ${badge}">${texto} · ${progreso.aciertos}/${progreso.total}</span></div>`;
+      return `<span class="mt-1" style="display:block;"><span class="badge ${clase}">${texto} · ${progreso.aciertos}/${progreso.total}</span></span>`;
     }
     return '';
   }
 
-  // ---------------------------------------------------------------------
-  // Tarjeta genérica reutilizable
-  // ---------------------------------------------------------------------
-  function tarjeta({ dataset, iconoHtml, titulo, subtitulo, extraHtml, deshabilitada, colorClase }) {
-    const div = document.createElement('div');
-    div.className = 'modo-card' + (deshabilitada ? ' disabled' : '') + (colorClase ? ' ' + colorClase : '');
-    Object.entries(dataset || {}).forEach(([k, v]) => { div.dataset[k] = v; });
-    div.innerHTML = `<h3>${iconoHtml || ''}${titulo}</h3><p>${subtitulo}</p>${extraHtml || ''}`;
-    return div;
+  function limpiarSeleccion() {
+    inputBloqueId.value = '';
+    inputTemaId.value = '';
+    accion('Elige una opción', false);
   }
 
-  // ---------------------------------------------------------------------
-  // Paso 1: elegir tipo de test (tarjetas superiores)
-  // ---------------------------------------------------------------------
-  document.querySelectorAll('#form-nuevo-test > .modo-selector > .modo-card').forEach((card) => {
-    card.addEventListener('click', () => {
-      document.querySelectorAll('#form-nuevo-test > .modo-selector > .modo-card').forEach((c) => c.classList.remove('selected'));
-      card.classList.add('selected');
-      const tipo = card.dataset.tipo;
-      inputTipo.value = tipo;
-      limpiarSeleccionInterna();
+  // -------------------------------------------------------------------------
+  // Render de cada paso
+  // -------------------------------------------------------------------------
+  function render() {
+    cuerpo.innerHTML = '';
+    limpiarSeleccion();
 
-      Object.values(paneles).forEach((p) => { p.style.display = 'none'; });
-      document.getElementById('paso-bloques').style.display = 'none';
+    if (paso === 1) return pasoTipo();
+    if (tipo === 'aleatorio') return pasoConfirmarAleatorio();
+    if (tipo === 'tema') return paso === 2 ? pasoTema() : pasoBloques();
+    if (tipo === 'oficial') return pasoSimulacros();
+    if (tipo === 'repaso') return pasoRepaso();
+  }
 
-      if (tipo === 'aleatorio') {
-        btnEmpezar.disabled = false;
-        btnEmpezar.textContent = 'Empezar test aleatorio';
-        return;
-      }
-      if (paneles[tipo]) paneles[tipo].style.display = 'block';
-      if (tipo === 'tema') renderGridTemas();
-      if (tipo === 'oficial') renderGridSimulacros();
-      if (tipo === 'repaso') renderGridRepaso();
+  function irA(n) { paso = n; render(); }
+
+  function pasoTipo() {
+    elTitulo.textContent = 'Tipo de test';
+    pintarProgreso();
+    Object.entries(TIPOS).forEach(([clave, t]) => {
+      const sinFallos = clave === 'repaso' && TOTAL_FALLOS === 0;
+      cuerpo.appendChild(fila({
+        titulo: t.titulo,
+        sub: sinFallos ? 'No tienes fallos pendientes de repasar.' : t.sub,
+        marca: `<i data-lucide="${t.icono}" class="icon"></i>`,
+        disabled: sinFallos,
+        seleccionada: tipo === clave,
+        onClick: () => {
+          tipo = clave;
+          inputTipo.value = clave;
+          temaElegido = null;
+          irA(2);
+        },
+      }));
     });
-  });
+    if (window.lucide) lucide.createIcons();
+  }
 
-  // ---------------------------------------------------------------------
-  // Test por tema — paso 1: elegir tema
-  // ---------------------------------------------------------------------
-  function renderGridTemas() {
-    const grid = document.getElementById('grid-temas');
-    grid.innerHTML = '';
+  function pasoConfirmarAleatorio() {
+    elTitulo.textContent = 'Test aleatorio';
+    pintarProgreso();
+    const caja = document.createElement('div');
+    caja.className = 'paso-resumen';
+    caja.innerHTML =
+      `<span class="rol">Listo para empezar</span>` +
+      `<span class="nombre">30 preguntas</span>` +
+      `<p class="detalle">De todo el temario, con el formato del examen oficial: 30 preguntas y se aprueba con 27.</p>`;
+    cuerpo.appendChild(caja);
+    accion('Empezar test aleatorio', true);
+  }
+
+  function pasoTema() {
+    elTitulo.textContent = 'Elige un tema';
+    pintarProgreso();
     TEMAS.forEach((t) => {
       const sinBloques = t.numBloques === 0;
-      const card = tarjeta({
-        dataset: { temaId: t.id },
-        iconoHtml: t.numero === 0 ? '<i data-lucide="layers" class="icon icon-sm" style="margin-right:6px;"></i>' : '',
+      cuerpo.appendChild(fila({
         titulo: t.numero === 0 ? 'Sin categorizar' : `Tema ${t.numero}`,
-        subtitulo: t.numero === 0 ? 'Preguntas que no encajan en ningún tema del manual' : t.nombre,
-        extraHtml: `<div class="text-muted mt-1" style="font-size:0.8rem;">${numPreguntasSeguro(t.numPreguntas)} preguntas · ${t.numBloques} test${t.numBloques === 1 ? '' : 's'}</div>`,
-        deshabilitada: sinBloques,
-      });
-      if (!sinBloques) {
-        card.addEventListener('click', () => {
-          grid.querySelectorAll('.modo-card').forEach((c) => c.classList.remove('selected'));
-          card.classList.add('selected');
-          renderGridBloques(t.id, t.numero);
-        });
-      }
-      grid.appendChild(card);
+        sub: t.numero === 0 ? 'Preguntas que no encajan en ningún tema' : esc(t.nombre),
+        marca: t.numero === 0 ? '<i data-lucide="layers" class="icon"></i>' : String(t.numero).padStart(2, '0'),
+        extra: `<span style="display:block;font-size:.78rem;color:var(--muted-soft);margin-top:4px;">${num(t.numPreguntas)} preguntas · ${t.numBloques} test${t.numBloques === 1 ? '' : 's'}</span>`,
+        disabled: sinBloques,
+        seleccionada: temaElegido && temaElegido.id === t.id,
+        onClick: () => { temaElegido = t; irA(3); },
+      }));
     });
     if (window.lucide) lucide.createIcons();
   }
 
-  // ---------------------------------------------------------------------
-  // Test por tema — paso 2: elegir bloque (Test 1, Test 2...)
-  // ---------------------------------------------------------------------
-  function renderGridBloques(temaId, temaNumero) {
-    const pasoBloques = document.getElementById('paso-bloques');
-    const grid = document.getElementById('grid-bloques');
-    grid.innerHTML = '';
-    const bloques = BLOQUES_POR_TEMA[temaId] || [];
-
+  function pasoBloques() {
+    const t = temaElegido;
+    elTitulo.textContent = t.numero === 0 ? 'Sin categorizar' : `Tema ${t.numero}`;
+    pintarProgreso();
+    const bloques = BLOQUES_POR_TEMA[t.id] || [];
+    if (!bloques.length) {
+      cuerpo.innerHTML = '<p class="ayuda">Este tema todavía no tiene tests generados.</p>';
+      return;
+    }
     bloques.forEach((b, idx) => {
-      const card = tarjeta({
-        dataset: { bloqueId: b.id },
+      const f = fila({
         titulo: `Test ${idx + 1}`,
-        subtitulo: `${numPreguntasSeguro(b.numPreguntas)} preguntas`,
-        extraHtml: estadoBloqueHtml(b.progreso),
+        sub: `${num(b.numPreguntas)} preguntas`,
+        marca: String(idx + 1).padStart(2, '0'),
+        extra: estadoBloque(b.progreso),
+        onClick: () => {
+          cuerpo.querySelectorAll('.fila-opcion').forEach((x) => x.classList.remove('selected'));
+          f.classList.add('selected');
+          inputBloqueId.value = b.id;
+          const enCurso = b.progreso && b.progreso.estado === 'en_progreso';
+          accion(`${enCurso ? 'Continuar' : 'Empezar'} Test ${idx + 1}`, true);
+        },
       });
-      card.addEventListener('click', () => {
-        grid.querySelectorAll('.modo-card').forEach((c) => c.classList.remove('selected'));
-        card.classList.add('selected');
-        inputBloqueId.value = b.id;
-        btnEmpezar.disabled = false;
-        btnEmpezar.textContent = b.progreso && b.progreso.estado === 'en_progreso'
-          ? `Continuar Tema ${temaNumero} · Test ${idx + 1}`
-          : `Empezar Tema ${temaNumero} · Test ${idx + 1}`;
-      });
-      grid.appendChild(card);
+      cuerpo.appendChild(f);
     });
-
-    pasoBloques.style.display = 'block';
     if (window.lucide) lucide.createIcons();
   }
 
-  // ---------------------------------------------------------------------
-  // Simulacro oficial
-  // ---------------------------------------------------------------------
-  function renderGridSimulacros() {
-    const grid = document.getElementById('grid-simulacros');
-    grid.innerHTML = '';
-    SIMULACROS.forEach((s, idx) => {
-      const card = tarjeta({
-        dataset: { bloqueId: s.id },
-        titulo: `Simulacro #${idx + 1}`,
-        subtitulo: `${numPreguntasSeguro(s.numPreguntas)} preguntas`,
-        extraHtml: estadoBloqueHtml(s.progreso),
-      });
-      card.addEventListener('click', () => {
-        grid.querySelectorAll('.modo-card').forEach((c) => c.classList.remove('selected'));
-        card.classList.add('selected');
-        inputBloqueId.value = s.id;
-        btnEmpezar.disabled = false;
-        btnEmpezar.textContent = s.progreso && s.progreso.estado === 'en_progreso'
-          ? `Continuar Simulacro #${idx + 1}`
-          : `Empezar Simulacro #${idx + 1}`;
-      });
-      grid.appendChild(card);
-    });
+  function pasoSimulacros() {
+    elTitulo.textContent = 'Elige un simulacro';
+    pintarProgreso();
     if (!SIMULACROS.length) {
-      grid.innerHTML = '<p class="text-muted">No hay simulacros generados todavía. Ejecuta <code>npm run generar:simulacros</code>.</p>';
+      cuerpo.innerHTML = '<p class="ayuda">No hay simulacros generados todavía. Ejecuta <code>npm run generar:simulacros</code>.</p>';
+      return;
     }
+    SIMULACROS.forEach((s, idx) => {
+      const f = fila({
+        titulo: `Simulacro ${idx + 1}`,
+        sub: `${num(s.numPreguntas)} preguntas`,
+        marca: String(idx + 1).padStart(2, '0'),
+        extra: estadoBloque(s.progreso),
+        onClick: () => {
+          cuerpo.querySelectorAll('.fila-opcion').forEach((x) => x.classList.remove('selected'));
+          f.classList.add('selected');
+          inputBloqueId.value = s.id;
+          const enCurso = s.progreso && s.progreso.estado === 'en_progreso';
+          accion(`${enCurso ? 'Continuar' : 'Empezar'} simulacro ${idx + 1}`, true);
+        },
+      });
+      cuerpo.appendChild(f);
+    });
     if (window.lucide) lucide.createIcons();
   }
 
-  // ---------------------------------------------------------------------
-  // Repaso de fallos
-  // ---------------------------------------------------------------------
-  function renderGridRepaso() {
-    const grid = document.getElementById('grid-repaso');
-    grid.innerHTML = '';
+  function pasoRepaso() {
+    elTitulo.textContent = '¿Qué quieres repasar?';
+    pintarProgreso();
 
-    const totalFallos = window.__TOTAL_FALLOS__ || 0;
-    const cardTodos = tarjeta({
-      dataset: { temaId: '' },
-      titulo: 'Todos los temas',
-      subtitulo: `${totalFallos} pregunta${totalFallos === 1 ? '' : 's'} fallada${totalFallos === 1 ? '' : 's'} en total`,
-      deshabilitada: totalFallos === 0,
-      colorClase: totalFallos > 0 ? 'card-fallo' : '',
-    });
-    if (totalFallos > 0) {
-      cardTodos.addEventListener('click', () => {
-        grid.querySelectorAll('.modo-card').forEach((c) => c.classList.remove('selected'));
-        cardTodos.classList.add('selected');
+    const todos = fila({
+      titulo: 'Todos los fallos',
+      sub: `${TOTAL_FALLOS} pregunta${TOTAL_FALLOS === 1 ? '' : 's'} fallada${TOTAL_FALLOS === 1 ? '' : 's'}`,
+      marca: '<i data-lucide="list" class="icon"></i>',
+      disabled: TOTAL_FALLOS === 0,
+      onClick: () => {
+        cuerpo.querySelectorAll('.fila-opcion').forEach((x) => x.classList.remove('selected'));
+        todos.classList.add('selected');
         inputTemaId.value = '';
-        btnEmpezar.disabled = false;
-        btnEmpezar.textContent = 'Repasar todos los fallos';
-      });
-    }
-    grid.appendChild(cardTodos);
+        accion('Repasar todos los fallos', true);
+      },
+    });
+    cuerpo.appendChild(todos);
 
     TEMAS.forEach((t) => {
       const n = t.numFallos || 0;
-      const card = tarjeta({
-        dataset: { temaId: t.id },
-        iconoHtml: t.numero === 0 ? '<i data-lucide="layers" class="icon icon-sm" style="margin-right:6px;"></i>' : '',
+      const f = fila({
         titulo: t.numero === 0 ? 'Sin categorizar' : `Tema ${t.numero}`,
-        subtitulo: t.numero === 0 ? 'Preguntas que no encajan en ningún tema del manual' : t.nombre,
-        extraHtml: `<div class="mt-1"><span class="badge ${n > 0 ? 'fail' : 'neutro'}">${n} fallo${n === 1 ? '' : 's'}</span></div>`,
-        deshabilitada: n === 0,
-      });
-      if (n > 0) {
-        card.addEventListener('click', () => {
-          grid.querySelectorAll('.modo-card').forEach((c) => c.classList.remove('selected'));
-          card.classList.add('selected');
+        sub: t.numero === 0 ? 'Preguntas sin tema' : esc(t.nombre),
+        marca: t.numero === 0 ? '<i data-lucide="layers" class="icon"></i>' : String(t.numero).padStart(2, '0'),
+        extra: `<span class="mt-1" style="display:block;"><span class="badge ${n > 0 ? 'fail' : 'neutro'}">${n} fallo${n === 1 ? '' : 's'}</span></span>`,
+        disabled: n === 0,
+        onClick: () => {
+          cuerpo.querySelectorAll('.fila-opcion').forEach((x) => x.classList.remove('selected'));
+          f.classList.add('selected');
           inputTemaId.value = t.id;
-          btnEmpezar.disabled = false;
-          btnEmpezar.textContent = t.numero === 0 ? 'Repasar fallos sin categorizar' : `Repasar fallos del tema ${t.numero}`;
-        });
-      }
-      grid.appendChild(card);
+          accion(t.numero === 0 ? 'Repasar sin categorizar' : `Repasar tema ${t.numero}`, true);
+        },
+      });
+      cuerpo.appendChild(f);
     });
     if (window.lucide) lucide.createIcons();
   }
+
+  btnAtras.addEventListener('click', () => {
+    if (paso > 1) irA(paso - 1);
+  });
+
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && paso > 1) irA(paso - 1);
+  });
+
+  render();
 })();

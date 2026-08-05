@@ -14,44 +14,57 @@
 
     <div class="estado-vacio" id="stats-vacio" style="display:none;">
       <div class="icono-vacio"><i data-lucide="bar-chart-3" class="icon-lg"></i></div>
-      <h3>Aún no hay datos suficientes</h3>
+      <h3>Aún no hay datos</h3>
       <p>En cuanto termines tu primer test (aleatorio, por tema, simulacro o repaso) aquí verás tu progreso.</p>
       <a href="/test/nuevo" class="btn">Hacer mi primer test</a>
     </div>
 
     <div id="stats-contenido" style="display:none;">
-      <div class="grid-donuts">
-        <div class="card tarjeta-donut">
-          <h2>Aciertos globales</h2>
-          <div class="donut-wrap"><canvas id="donut-aciertos"></canvas></div>
-          <div class="leyenda-donut" id="leyenda-aciertos"></div>
+
+      <div class="franja-indicadores" id="stats-marcador">
+        <div class="indicador"><span class="valor" id="v-tests">–</span><span class="etiqueta">Tests</span></div>
+        <div class="indicador"><span class="valor" id="v-acierto">–</span><span class="etiqueta">Acierto</span></div>
+        <div class="indicador"><span class="valor" id="v-aptos" style="color:var(--success);text-shadow:none;">–</span><span class="etiqueta">Aptos</span></div>
+        <div class="indicador"><span class="valor" id="v-noaptos" style="color:var(--danger);text-shadow:none;">–</span><span class="etiqueta">No aptos</span></div>
+      </div>
+
+      <div class="card">
+        <div class="hud-etiquetas">
+          <span>Acierto acumulado</span>
+          <b id="v-acierto-2">–</b>
         </div>
-        <div class="card tarjeta-donut">
-          <h2>Resultado de tests</h2>
-          <div class="donut-wrap"><canvas id="donut-aptos"></canvas></div>
-          <div class="leyenda-donut" id="leyenda-aptos"></div>
+        <div class="barra-energia" id="barra-global">
+          <div class="pista"><div class="carga" id="carga-global" style="width:0%"></div></div>
         </div>
+        <div class="reparto mt-2" id="reparto-respuestas"></div>
+        <div class="leyenda-reparto" id="leyenda-respuestas"></div>
       </div>
 
       <div class="card">
         <h2>Aciertos por tema</h2>
-        <p class="text-muted" style="margin-top:-2px;">"T0" son las preguntas sin categorizar.</p>
-        <div class="chart-wrap"><canvas id="chart-temas" height="120"></canvas></div>
+        <p class="text-muted" style="margin-top:-2px;">Solo se listan los temas en los que ya has respondido preguntas.</p>
+        <div id="lista-temas">
+          <div class="stats-carga">
+            <div class="skeleton skeleton-linea corta"></div>
+            <div class="skeleton alto"></div>
+            <div class="skeleton skeleton-linea corta"></div>
+            <div class="skeleton alto"></div>
+          </div>
+        </div>
       </div>
 
       <div class="card">
         <h2>Simulacros oficiales</h2>
         <div style="overflow-x:auto;">
-        <table class="tabla-simple" id="tabla-oficiales">
-          <thead><tr><th>Simulacro</th><th>Intentos</th><th>Mejor resultado</th><th>Apto</th></tr></thead>
-          <tbody></tbody>
-        </table>
+          <table class="tabla-simple" id="tabla-oficiales">
+            <thead><tr><th>Simulacro</th><th>Intentos</th><th>Mejor</th><th>Apto</th></tr></thead>
+            <tbody><tr><td colspan="4" class="text-muted">Cargando…</td></tr></tbody>
+          </table>
         </div>
       </div>
     </div>
   </div>
 
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.4/chart.umd.min.js"></script>
   <script src="/js/stats.js"></script>
 </body>
 </html>

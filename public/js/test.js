@@ -36,7 +36,7 @@
   const imgPregunta = document.getElementById('img-pregunta');
   const zonaEnunciado = document.getElementById('zona-enunciado');
   const zonaOpciones = document.getElementById('zona-opciones');
-  const zonaExplicacion = document.getElementById('zona-explicacion');
+  const btnSalir = document.getElementById('btn-salir-test');
   const contador = document.getElementById('contador-preguntas');
   const barra = document.getElementById('barra-progreso');
   const btnAnterior = document.getElementById('btn-anterior');
@@ -143,17 +143,6 @@
     });
     zonaOpciones.innerHTML = html;
 
-    // Explicación: solo si el servidor la devolvió al responder. Ocupa el hueco
-    // libre y se desplaza dentro de su caja; nunca alarga la página.
-    const texto = respuesta && (respuesta.opcionCorrectaExplicacion || respuesta.opcionElegidaExplicacion);
-    if (texto) {
-      zonaExplicacion.innerHTML = `<strong>Por qué</strong>${escapeHtml(texto)}`;
-      zonaExplicacion.style.display = 'block';
-    } else {
-      zonaExplicacion.style.display = 'none';
-      zonaExplicacion.innerHTML = '';
-    }
-
     zonaOpciones.querySelectorAll('.opcion').forEach((btn) => {
       btn.addEventListener('click', () => responder(p, Number(btn.dataset.opcionId)));
     });
@@ -218,6 +207,16 @@
   btnExperto.addEventListener('click', () => {
     if (window.ExpertoChat) window.ExpertoChat.abrir(preguntaActual().preguntaId);
   });
+
+  if (btnSalir) {
+    btnSalir.addEventListener('click', (e) => {
+      const respondidas = respuestasLocal.size;
+      const aviso = respondidas > 0
+        ? `Saliendo ahora, el test queda sin finalizar (llevas ${respondidas} de ${preguntas.length} respondidas). Podrás continuarlo más tarde. ¿Salir?`
+        : '¿Salir del test?';
+      if (!confirm(aviso)) e.preventDefault();
+    });
+  }
 
   btnAnterior.addEventListener('click', () => {
     if (indiceActual > 0) { indiceActual--; render(); }

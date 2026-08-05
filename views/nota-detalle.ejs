@@ -4,36 +4,40 @@
 <body>
   <%- include('partials/nav') %>
   <div class="container">
-    <div class="flex-between">
+
+    <div class="flex-between" style="margin-bottom:12px;">
       <h1><%= nota.titulo || 'Nota sin título' %></h1>
       <span class="badge <%= nota.origen === 'ia' ? 'ia' : 'neutro' %>">
-        <%= nota.origen === 'ia' ? 'Guardada desde el asistente IA' : (nota.origen === 'mixta' ? 'Origen mixto' : 'Manual') %>
+        <%= nota.origen === 'ia' ? 'Del asistente' : (nota.origen === 'mixta' ? 'Mixta' : 'Manual') %>
       </span>
     </div>
 
-    <div class="card mt-2">
+    <div class="card">
       <% if (nota.pregunta_imagen) { %>
-        <img class="pregunta-imagen" src="/images/preguntas/<%= nota.pregunta_imagen %>" alt="Imagen de la pregunta relacionada" style="max-height:260px;" />
+        <img class="pregunta-imagen" src="/images/preguntas/<%= nota.pregunta_imagen %>" alt="Imagen de la pregunta relacionada" style="max-height:240px;" />
       <% } %>
-      <p style="white-space:pre-wrap;"><%= nota.contenido %></p>
+      <p class="nota-cuerpo"><%= nota.contenido %></p>
     </div>
 
     <div class="card">
       <% if (nota.pregunta_enunciado) { %>
-        <p><strong>Pregunta relacionada:</strong> <%= nota.pregunta_enunciado %>
-          <% if (nota.pregunta_id) { %> — <a href="/cuaderno/nueva?pregunta_id=<%= nota.pregunta_id %>">ver más notas de esta pregunta</a><% } %>
+        <h2>Pregunta relacionada</h2>
+        <p><%= nota.pregunta_enunciado %>
+          <% if (nota.pregunta_id) { %><br /><a href="/cuaderno/nueva?pregunta_id=<%= nota.pregunta_id %>">Añadir otra nota a esta pregunta</a><% } %>
         </p>
       <% } %>
-      <% if (nota.tema_numero) { %><span class="etiqueta-pill">Tema <%= nota.tema_numero %> — <%= nota.tema_nombre %></span><% } %>
-      <% if (nota.categoria) { %><span class="etiqueta-pill"><%= nota.categoria %></span><% } %>
-      <% (nota.etiquetas || '').split(',').map(t=>t.trim()).filter(Boolean).forEach(function(t){ %>
-        <span class="etiqueta-pill">#<%= t %></span>
-      <% }) %>
+      <div>
+        <% if (nota.tema_numero) { %><span class="etiqueta-pill">Tema <%= nota.tema_numero %> — <%= nota.tema_nombre %></span><% } %>
+        <% if (nota.categoria) { %><span class="etiqueta-pill"><%= nota.categoria %></span><% } %>
+        <% (nota.etiquetas || '').split(',').map(t=>t.trim()).filter(Boolean).forEach(function(t){ %>
+          <span class="etiqueta-pill">#<%= t %></span>
+        <% }) %>
+      </div>
       <p class="text-muted mt-2" style="margin:0;">Creada: <%= nota.creado_en %> · Actualizada: <%= nota.actualizado_en %></p>
     </div>
 
     <div class="flex-between">
-      <a href="/cuaderno" class="btn secundario"><i data-lucide="arrow-left" class="icon"></i> Volver al cuaderno</a>
+      <a href="/cuaderno" class="btn secundario"><i data-lucide="arrow-left" class="icon"></i> Cuaderno</a>
       <div style="display:flex; gap:10px;">
         <a href="/cuaderno/<%= nota.id %>/editar" class="btn secundario"><i data-lucide="pencil" class="icon"></i> Editar</a>
         <form method="POST" action="/cuaderno/<%= nota.id %>/eliminar" onsubmit="return confirm('¿Eliminar esta nota? No se puede deshacer.');">

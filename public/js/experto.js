@@ -4,7 +4,6 @@
 // que test.js los abra/cierre al navegar entre preguntas.
 
 (function () {
-  const csrfToken = document.querySelector('meta[name="csrf-token"]').content;
 
   // ---------------------------------------------------------------------
   // Chat con el experto
@@ -62,9 +61,9 @@
     btn.disabled = true;
     btn.textContent = 'Guardando...';
     try {
-      const res = await fetch('/api/notas', {
+      const res = await window.fetchConCsrf('/api/notas', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': csrfToken },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ preguntaId: preguntaActualId, contenido, origen: 'ia' }),
       });
       if (!res.ok) throw new Error();
@@ -81,9 +80,9 @@
     const loading = pintarMensaje({ rol: 'asistente', texto: 'Escribiendo...' });
 
     try {
-      const res = await fetch('/api/expert-chat', {
+      const res = await window.fetchConCsrf('/api/expert-chat', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': csrfToken },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ preguntaId: preguntaActualId, mensaje: texto, historial: historialLocal }),
       });
       const data = await res.json();
@@ -160,9 +159,9 @@
     btnGuardarNota.disabled = true;
     estadoNota.textContent = 'Guardando...';
     try {
-      const res = await fetch('/api/notas', {
+      const res = await window.fetchConCsrf('/api/notas', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': csrfToken },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ preguntaId: notaPreguntaId, contenido, origen: 'manual' }),
       });
       if (!res.ok) throw new Error();

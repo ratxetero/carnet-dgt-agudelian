@@ -1,17 +1,19 @@
 // public/js/test.js
 // Lógica de la pantalla de realización de un test. Sin frameworks: JS plano.
+//
+// Layout sin scroll: el HUD (contador, cronómetro, acciones) y las acciones de
+// navegación son estáticos y viven fuera de la zona que se repinta. Aquí solo
+// se rellenan la imagen, el enunciado, las respuestas y la explicación.
 
 (function () {
   const TEST_ID = window.__TEST_ID__;
-  const preguntas = window.__PREGUNTAS__; // ver estructura devuelta por testService.obtenerTestParaJugar
-  const csrfToken = document.querySelector('meta[name="csrf-token"]').content;
+  const preguntas = window.__PREGUNTAS__;
   const inicio = Date.now();
   const CLAVE_MARCADAS = `marcadas-test-${TEST_ID}`;
 
   let indiceActual = 0;
   const LETRAS = ['A', 'B', 'C', 'D', 'E'];
 
-  // Mapa local con el resultado de las preguntas ya respondidas en esta sesión de juego
   const respuestasLocal = new Map();
   preguntas.forEach((p) => {
     if (p.yaRespondida) {
@@ -25,13 +27,29 @@
     }
   });
 
-  // "Marcar para revisar": se guarda en localStorage (por dispositivo/navegador),
-  // así sobrevive a recargas de la página dentro del mismo test.
   let marcadas = new Set();
   try {
-    const guardado = JSON.parse(localStorage.getItem(CLAVE_MARCADAS) || '[]');
-    marcadas = new Set(guardado);
-  } catch (e) { /* si falla, simplemente empezamos sin marcadas */ }
+    marcadas = new Set(JSON.parse(localStorage.getItem(CLAVE_MARCADAS) || '[]'));
+  } catch (e) { /* empezamos sin marcadas */ }
+
+  const zonaImagen = document.getElementById('zona-imagen');
+  const imgPregunta = document.getElementById('img-pregunta');
+  const zonaEnunciado = document.getElementById('zona-enunciado');
+  const zonaOpciones = document.getElementById('zona-opciones');
+  const zonaExplicacion = document.getElementById('zona-explicacion');
+  const contador = document.getElementById('contador-preguntas');
+  const barra = document.getElementById('barra-progreso');
+  const btnAnterior = document.getElementById('btn-anterior');
+  const btnSiguiente = document.getElementById('btn-siguiente');
+  const btnMarcar = document.getElementById('btn-marcar-revisar');
+  const btnNota = document.getElementById('btn-guardar-nota');
+  const btnExperto = document.getElementById('btn-consultar-experto');
+  const cronometroEl = document.getElementById('cronometro');
+  const comboHud = document.getElementById('combo-hud');
+
+  let temporizadorCombo = null;
+  let rachaAciertos = 0;
+  let rachaFallos = 0;
 
   function guardarMarcadas() {
     try { localStorage.setItem(CLAVE_MARCADAS, JSON.stringify([...marcadas])); } catch (e) {}
@@ -49,23 +67,9 @@
     }
   }
 
-  const zonaPregunta = document.getElementById('zona-pregunta');
-  const contador = document.getElementById('contador-preguntas');
-  const barra = document.getElementById('barra-progreso');
-  const btnAnterior = document.getElementById('btn-anterior');
-  const btnSiguiente = document.getElementById('btn-siguiente');
-  const cronometroEl = document.getElementById('cronometro');
-  const toastFeedback = document.getElementById('toast-feedback');
-  const comboHud = document.getElementById('combo-hud');
-  let temporizadorToast = null;
-  let temporizadorCombo = null;
-  let rachaAciertos = 0;
-  let rachaFallos = 0;
-
   function actualizarCombo(esCorrecta) {
     if (esCorrecta) { rachaAciertos++; rachaFallos = 0; }
     else { rachaFallos++; rachaAciertos = 0; }
-
     if (rachaAciertos >= 2) mostrarCombo(rachaAciertos, true);
     else if (rachaFallos >= 2) mostrarCombo(rachaFallos, false);
   }
@@ -74,28 +78,13 @@
     if (!comboHud) return;
     let etiqueta;
     if (esPositivo) etiqueta = n >= 5 ? 'PERFECT RUN' : n >= 4 ? 'ON FIRE' : 'HIT COMBO';
-    else etiqueta = n >= 4 ? 'MISTAKE STREAK — ¡recupérate!' : 'ERROR CHAIN';
-
+    else etiqueta = n >= 4 ? 'CADENA DE FALLOS' : 'FALLO x2';
     comboHud.textContent = `${n} ${etiqueta}`;
     comboHud.className = 'combo-hud ' + (esPositivo ? 'positivo' : 'negativo');
-    // Fuerza un reflow para poder reiniciar la animación de "pop" aunque
-    // el combo ya estuviera visible (racha que sigue creciendo).
     void comboHud.offsetWidth;
     comboHud.classList.add('visible', 'pop');
     clearTimeout(temporizadorCombo);
-    temporizadorCombo = setTimeout(() => { comboHud.classList.remove('visible'); }, 2200);
-  }
-
-  function mostrarToastFeedback(esCorrecta) {
-    clearTimeout(temporizadorToast);
-    toastFeedback.className = 'toast-feedback visible ' + (esCorrecta ? 'correcta' : 'incorrecta');
-    toastFeedback.innerHTML = `<i data-lucide="${esCorrecta ? 'check-circle-2' : 'x-circle'}" class="icon"></i> ${esCorrecta ? '¡Correcto!' : 'Incorrecto'}`;
-    if (window.lucide) lucide.createIcons();
-    temporizadorToast = setTimeout(() => { toastFeedback.classList.remove('visible'); }, 2600);
-  }
-  function ocultarToastFeedback() {
-    clearTimeout(temporizadorToast);
-    toastFeedback.classList.remove('visible');
+    temporizadorCombo = setTimeout(() => { comboHud.classList.remove('visible'); }, 2000);
   }
 
   function actualizarCronometro() {
@@ -113,29 +102,33 @@
     return div.innerHTML;
   }
 
+  function preguntaActual() { return preguntas[indiceActual]; }
+
   function render() {
-    const p = preguntas[indiceActual];
+    const p = preguntaActual();
+    const respuesta = respuestasLocal.get(p.preguntaId);
+
     contador.textContent = `Pregunta ${indiceActual + 1} de ${preguntas.length}`;
     barra.style.width = `${((indiceActual + 1) / preguntas.length) * 100}%`;
     btnAnterior.disabled = indiceActual === 0;
     const esUltima = indiceActual === preguntas.length - 1;
     btnSiguiente.innerHTML = esUltima
-      ? '<i data-lucide="check-circle-2" class="icon"></i> Finalizar test'
+      ? '<i data-lucide="check-circle-2" class="icon"></i> Finalizar'
       : 'Siguiente <i data-lucide="arrow-right" class="icon"></i>';
 
-    const respuesta = respuestasLocal.get(p.preguntaId);
-    const marcada = marcadas.has(p.preguntaId);
+    if (p.imagen) {
+      imgPregunta.src = `/images/preguntas/${p.imagen}`;
+      zonaImagen.classList.add('visible');
+    } else {
+      imgPregunta.removeAttribute('src');
+      zonaImagen.classList.remove('visible');
+    }
+
+    zonaEnunciado.textContent = p.enunciado || '';
+    btnMarcar.classList.toggle('activo', marcadas.has(p.preguntaId));
+    btnExperto.disabled = !respuesta;
 
     let html = '';
-    if (p.imagen) {
-      html += `<img class="pregunta-imagen" src="/images/preguntas/${p.imagen}" alt="Imagen de la pregunta" />`;
-    }
-    html += `<div class="flex-between" style="align-items:flex-start;">`;
-    html += `<h3 style="font-size:1.02rem; max-width:88%;">${escapeHtml(p.enunciado)}</h3>`;
-    html += `<button type="button" class="btn-marcar ${marcada ? 'activo' : ''}" id="btn-marcar-revisar" title="Marcar para revisar"><i data-lucide="bookmark" class="icon-sm"></i></button>`;
-    html += `</div>`;
-
-    html += '<div class="opciones">';
     p.opciones.forEach((op, idx) => {
       let clase = 'opcion';
       if (respuesta) {
@@ -148,53 +141,32 @@
       html += `<span>${escapeHtml(op.texto)}</span>`;
       html += `</button>`;
     });
-    html += '</div>';
+    zonaOpciones.innerHTML = html;
 
-    html += `<div style="display:flex; gap:8px; flex-wrap:wrap; margin-top:8px;">`;
-    html += `<button type="button" class="btn secundario" id="btn-guardar-nota"><i data-lucide="sticky-note" class="icon"></i> Guardar en notas</button>`;
-    if (respuesta) {
-      html += `<button type="button" class="btn btn-experto" id="btn-consultar-experto"><i data-lucide="message-circle" class="icon"></i> Consulta a un experto</button>`;
+    // Explicación: solo si el servidor la devolvió al responder. Ocupa el hueco
+    // libre y se desplaza dentro de su caja; nunca alarga la página.
+    const texto = respuesta && (respuesta.opcionCorrectaExplicacion || respuesta.opcionElegidaExplicacion);
+    if (texto) {
+      zonaExplicacion.innerHTML = `<strong>Por qué</strong>${escapeHtml(texto)}`;
+      zonaExplicacion.style.display = 'block';
+    } else {
+      zonaExplicacion.style.display = 'none';
+      zonaExplicacion.innerHTML = '';
     }
-    html += `</div>`;
 
-    zonaPregunta.innerHTML = html;
-    if (window.lucide) lucide.createIcons();
-
-    if (respuesta) mostrarToastFeedback(respuesta.esCorrecta);
-    else ocultarToastFeedback();
-
-    zonaPregunta.querySelectorAll('.opcion').forEach((btn) => {
+    zonaOpciones.querySelectorAll('.opcion').forEach((btn) => {
       btn.addEventListener('click', () => responder(p, Number(btn.dataset.opcionId)));
     });
 
-    document.getElementById('btn-marcar-revisar').addEventListener('click', () => {
-      if (marcadas.has(p.preguntaId)) marcadas.delete(p.preguntaId);
-      else marcadas.add(p.preguntaId);
-      guardarMarcadas();
-      render();
-    });
-
-    document.getElementById('btn-guardar-nota').addEventListener('click', () => {
-      window.NotaRapida.abrir(p.preguntaId);
-    });
-
-    const btnExperto = document.getElementById('btn-consultar-experto');
-    if (btnExperto) {
-      btnExperto.addEventListener('click', () => {
-        window.ExpertoChat.abrir(p.preguntaId);
-      });
-    }
-
-    // Si el modal del experto estaba abierto de la pregunta anterior, lo cerramos:
-    // la conversación nunca debe mezclarse entre preguntas distintas.
+    if (window.lucide) lucide.createIcons();
     if (window.ExpertoChat) window.ExpertoChat.cerrar();
   }
 
   async function responder(pregunta, opcionId) {
     try {
-      const res = await fetch(`/api/test/${TEST_ID}/responder`, {
+      const res = await window.fetchConCsrf(`/api/test/${TEST_ID}/responder`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': csrfToken },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ preguntaId: pregunta.preguntaId, opcionId }),
       });
       const data = await res.json();
@@ -217,9 +189,9 @@
   async function finalizar() {
     const tiempoSegundos = Math.round((Date.now() - inicio) / 1000);
     try {
-      const res = await fetch(`/api/test/${TEST_ID}/finalizar`, {
+      const res = await window.fetchConCsrf(`/api/test/${TEST_ID}/finalizar`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': csrfToken },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ tiempoSegundos }),
       });
       const data = await res.json();
@@ -231,11 +203,24 @@
     }
   }
 
+  btnMarcar.addEventListener('click', () => {
+    const p = preguntaActual();
+    if (marcadas.has(p.preguntaId)) marcadas.delete(p.preguntaId);
+    else marcadas.add(p.preguntaId);
+    guardarMarcadas();
+    btnMarcar.classList.toggle('activo', marcadas.has(p.preguntaId));
+  });
+
+  btnNota.addEventListener('click', () => {
+    if (window.NotaRapida) window.NotaRapida.abrir(preguntaActual().preguntaId);
+  });
+
+  btnExperto.addEventListener('click', () => {
+    if (window.ExpertoChat) window.ExpertoChat.abrir(preguntaActual().preguntaId);
+  });
+
   btnAnterior.addEventListener('click', () => {
-    if (indiceActual > 0) {
-      indiceActual--;
-      render();
-    }
+    if (indiceActual > 0) { indiceActual--; render(); }
   });
 
   btnSiguiente.addEventListener('click', () => {
@@ -254,11 +239,22 @@
     }
   });
 
+  // Teclado: 1-5 responden, flechas navegan.
+  document.addEventListener('keydown', (e) => {
+    if (e.target.matches('input, textarea')) return;
+    const n = Number(e.key);
+    if (n >= 1 && n <= 5) {
+      const btn = zonaOpciones.querySelectorAll('.opcion')[n - 1];
+      if (btn && !btn.disabled) btn.click();
+    } else if (e.key === 'ArrowRight') btnSiguiente.click();
+    else if (e.key === 'ArrowLeft' && !btnAnterior.disabled) btnAnterior.click();
+  });
+
   if (preguntas.length) {
     actualizarContadorMarcadas();
     render();
   } else {
-    zonaPregunta.innerHTML = '<p>No hay preguntas disponibles para este test.</p>';
+    zonaEnunciado.textContent = 'No hay preguntas disponibles para este test.';
     btnSiguiente.disabled = true;
   }
 })();

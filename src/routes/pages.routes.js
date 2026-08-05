@@ -69,6 +69,15 @@ router.get('/stats', requireAuth, (req, res) => {
   res.render('stats');
 });
 
+// El token CSRF se lee una vez al cargar la página y se guarda en el JS del
+// cliente. Si una sesión de test se alarga mucho, ese token en caché puede
+// quedar desincronizado de la sesión real. Este endpoint permite al cliente
+// pedir el token vigente en cualquier momento y reintentar la petición que
+// falló, en vez de dejar al usuario atrapado con un error irrecuperable.
+router.get('/api/csrf-token', requireAuth, (req, res) => {
+  res.json({ csrfToken: res.locals.csrfToken });
+});
+
 // Fuerza una copia de seguridad inmediata en Turso. Pensada para visitarla
 // tú mismo, logueado, justo ANTES de hacer un `git push` — así te asegura
 // que Turso tiene la última versión antes de que Render mate el proceso

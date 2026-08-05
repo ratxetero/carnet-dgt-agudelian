@@ -4,8 +4,9 @@
 <body>
   <%- include('partials/nav') %>
   <div class="container">
+    <div class="eyebrow">Tipos de test</div>
     <h1>Elige el tipo de test</h1>
-    <% if (error) { %><div class="errores"><%= error %></div><% } %>
+    <% if (error) { %><div class="errores"><i data-lucide="alert-octagon" class="icon"></i> <%= error %></div><% } %>
 
     <form method="POST" action="/test/iniciar" id="form-nuevo-test">
       <input type="hidden" name="_csrf" value="<%= csrfToken %>" />

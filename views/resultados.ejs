@@ -4,109 +4,97 @@
 <body>
   <%- include('partials/nav') %>
   <div class="container">
-    <h1>Resultados del test</h1>
 
-    <div class="tarjeta-resultado <%= test.aprobado ? 'apto' : 'no-apto' %>">
-      <div class="imagen-resultado">
-        <% if (test.aprobado) { %>
-          <img src="/images/marca/gato-aprobado.png" alt="Gato conduciendo un coche rojo, ¡aprobado!" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';" />
-          <div class="imagen-resultado-fallback" style="display:none;"><i data-lucide="check-circle-2" class="icon-lg"></i></div>
-        <% } else { %>
-          <img src="/images/marca/gato-triste.png" alt="Gato triste" class="svg-gato-triste" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';" />
-          <div class="imagen-resultado-fallback" style="display:none;"><i data-lucide="x-circle" class="icon-lg"></i></div>
-        <% } %>
-      </div>
-
-      <div class="contenido-resultado">
 <%
-  const radio = 60;
-  const circunferencia = 2 * Math.PI * radio;
-  const fraccion = test.num_preguntas > 0 ? test.aciertos / test.num_preguntas : 0;
-  const offset = circunferencia * (1 - fraccion);
-  const colorAro = test.aprobado ? 'var(--success)' : 'var(--danger)';
+  const total = test.num_preguntas || 0;
+  const pct = total > 0 ? Math.round((test.aciertos / total) * 100) : 0;
+  const minutos = test.tiempo_segundos ? Math.floor(test.tiempo_segundos / 60) : 0;
+  const segundos = test.tiempo_segundos ? test.tiempo_segundos % 60 : 0;
 %>
-        <div class="marcador-resultado">
-          <svg width="148" height="148" viewBox="0 0 148 148">
-            <circle cx="74" cy="74" r="<%= radio %>" fill="none" stroke="var(--border)" stroke-width="12" />
-            <circle cx="74" cy="74" r="<%= radio %>" fill="none" stroke="<%= colorAro %>" stroke-width="12"
-                    stroke-linecap="round" stroke-dasharray="<%= circunferencia %>" stroke-dashoffset="<%= offset %>"
-                    transform="rotate(-90 74 74)" style="transition: stroke-dashoffset 0.6s ease;" />
-            <text x="74" y="70" text-anchor="middle" class="numero-central"><%= test.aciertos %>/<%= test.num_preguntas %></text>
-            <text x="74" y="90" text-anchor="middle" class="etiqueta-central">aciertos</text>
-          </svg>
-        </div>
 
-        <div class="badge <%= test.aprobado ? 'ok' : 'fail' %>" style="font-size:0.9rem;">
-          <i data-lucide="<%= test.aprobado ? 'check-circle-2' : 'x-circle' %>" class="icon-sm"></i>
-          <%= test.aprobado ? 'APTO' : 'NO APTO' %>
-        </div>
+    <div class="veredicto <%= test.aprobado ? '' : 'derrota' %>">
+      <span class="rotulo"><%= test.aprobado ? 'Apto' : 'No apto' %></span>
+      <span class="subrotulo"><%= test.aciertos %> de <%= total %> aciertos · <%= pct %>%</span>
+    </div>
 
-        <p class="mensaje-resultado">
-          <% if (test.aprobado) { %>
-            ¡Buen trabajo! Con <%= test.fallos %> fallo<%= test.fallos===1?'':'s' %> habrías aprobado el examen real.
-          <% } else { %>
-            Te faltó un poco. Repasa los temas donde más fallaste y vuelve a intentarlo.
-          <% } %>
-        </p>
-        <p class="text-muted" style="margin:0;">
-          Aciertos: <%= test.aciertos %> · Fallos: <%= test.fallos %> · En blanco: <%= test.en_blanco %>
-          <% if (test.tiempo_segundos) { %> · Tiempo: <%= Math.floor(test.tiempo_segundos/60) %> min <%= test.tiempo_segundos%60 %> s<% } %>
-        </p>
-
-        <div class="acciones-resultado">
-          <% if (test.aprobado) { %>
-            <a href="/test/nuevo" class="btn">Otro test</a>
-          <% } else { %>
-            <a href="/test/nuevo" class="btn">Repasar fallos</a>
-          <% } %>
-          <a href="/" class="btn secundario">Inicio</a>
-        </div>
+    <div class="panel-marcador">
+      <div class="celda ok">
+        <span class="valor"><%= test.aciertos %></span>
+        <span class="etiqueta">Aciertos</span>
+      </div>
+      <div class="celda fail">
+        <span class="valor"><%= test.fallos %></span>
+        <span class="etiqueta">Fallos</span>
+      </div>
+      <div class="celda">
+        <span class="valor"><%= test.en_blanco %></span>
+        <span class="etiqueta">En blanco</span>
       </div>
     </div>
 
     <div class="card">
-      <h2>Desglose por tema</h2>
-      <div style="overflow-x:auto;">
-      <table class="tabla-simple">
-        <thead><tr><th>Tema</th><th>Aciertos</th><th>Fallos</th><th>En blanco</th></tr></thead>
-        <tbody>
-          <% desglosePorTema.forEach(function(d){ %>
-            <tr>
-              <td><%= d.tema_numero ? ('Tema ' + d.tema_numero + ' — ' + d.tema_nombre) : d.tema_nombre %></td>
-              <td><%= d.aciertos %></td>
-              <td><%= d.fallos %></td>
-              <td><%= d.en_blanco %></td>
-            </tr>
-          <% }) %>
-        </tbody>
-      </table>
+      <div class="hud-etiquetas">
+        <span>Nota del test</span>
+        <b><%= pct %>%</b>
+      </div>
+      <div class="barra-energia <%= pct < 90 ? 'baja' : '' %>">
+        <div class="pista"><div class="carga" style="width:<%= pct %>%"></div></div>
+      </div>
+      <p class="mt-2" style="margin-bottom:0;">
+        <% if (test.aprobado) { %>
+          Superado. En el examen real se aprueba con 27 de 30, y aquí has fallado <%= test.fallos %>.
+        <% } else { %>
+          No superado. Se necesitan 27 de 30: te han faltado <%= Math.max(0, 27 - test.aciertos) %> aciertos.
+        <% } %>
+        <% if (test.tiempo_segundos) { %>Tiempo: <%= minutos %> min <%= segundos %> s.<% } %>
+      </p>
+      <div class="acciones-resultado" style="justify-content:flex-start;">
+        <a href="/test/nuevo" class="btn"><i data-lucide="<%= test.aprobado ? 'play' : 'rotate-ccw' %>" class="icon"></i> <%= test.aprobado ? 'Otro test' : 'Repasar fallos' %></a>
+        <a href="/" class="btn secundario">Panel</a>
       </div>
     </div>
+
+    <% if (desglosePorTema && desglosePorTema.length) { %>
+      <div class="card">
+        <h2>Desglose por tema</h2>
+        <% desglosePorTema.forEach(function(d){
+             const dTotal = (d.aciertos||0) + (d.fallos||0) + (d.en_blanco||0);
+             const dPct = dTotal > 0 ? Math.round((d.aciertos / dTotal) * 100) : 0; %>
+          <div class="fila-energia">
+            <div class="fila-cab">
+              <span class="fila-nombre"><%= d.tema_numero ? ('Tema ' + d.tema_numero + ' — ' + d.tema_nombre) : d.tema_nombre %></span>
+              <span class="fila-cifra"><%= d.aciertos %>/<%= dTotal %></span>
+            </div>
+            <div class="barra-energia <%= dPct < 70 ? 'baja' : '' %>">
+              <div class="pista"><div class="carga" style="width:<%= dPct %>%"></div></div>
+            </div>
+          </div>
+        <% }) %>
+      </div>
+    <% } %>
 
     <div class="card">
       <h2>Revisión de preguntas</h2>
       <% detalle.forEach(function(p, i){ %>
-        <div class="card" style="background:var(--surface-sunken); box-shadow:none;">
-          <div class="flex-between">
-            <strong>Pregunta <%= i + 1 %></strong>
+        <div class="revision-pregunta">
+          <div class="cab">
+            <span class="num">Nº <%= String(i + 1).padStart(2, '0') %></span>
             <% if (p.esCorrecta === null) { %><span class="badge neutro">Sin responder</span>
             <% } else if (p.esCorrecta) { %><span class="badge ok"><i data-lucide="check" class="icon-sm"></i> Correcta</span>
             <% } else { %><span class="badge fail"><i data-lucide="x" class="icon-sm"></i> Incorrecta</span><% } %>
           </div>
-          <% if (p.imagen) { %><img class="pregunta-imagen" style="max-height:200px;" src="/images/preguntas/<%= p.imagen %>" alt="" /><% } %>
-          <p><%= p.enunciado %></p>
-          <ul style="list-style:none; padding:0;">
+          <% if (p.imagen) { %><img class="pregunta-imagen" style="max-height:180px;" src="/images/preguntas/<%= p.imagen %>" alt="" /><% } %>
+          <p class="enunciado"><%= p.enunciado %></p>
+          <ul class="revision-opciones">
             <% p.opciones.forEach(function(op){ %>
-              <li style="padding:9px 11px; border-radius:8px; margin-bottom:6px;
-                background: <%= op.es_correcta ? 'var(--success-soft)' : (op.id === p.opcionElegidaId ? 'var(--danger-soft)' : 'var(--surface)') %>;
-                border: 1px solid var(--border);">
-                <div class="flex-icon"><%= op.texto %>
+              <li class="<%= op.es_correcta ? 'correcta' : (op.id === p.opcionElegidaId ? 'elegida-mal' : '') %>">
+                <span class="marca">
                   <% if (op.es_correcta) { %><i data-lucide="check" class="icon-sm" style="color:var(--success);"></i>
                   <% } else if (op.id === p.opcionElegidaId) { %><i data-lucide="x" class="icon-sm" style="color:var(--danger);"></i><% } %>
-                </div>
-                <% if (op.explicacion) { %>
-                  <div class="text-muted" style="margin-top:4px; font-size:0.85rem;"><%= op.explicacion %></div>
-                <% } %>
+                </span>
+                <span><%= op.texto %>
+                  <% if (op.explicacion) { %><span class="explica"><%= op.explicacion %></span><% } %>
+                </span>
               </li>
             <% }) %>
           </ul>
@@ -116,7 +104,7 @@
 
     <div class="flex-between">
       <a href="/test/nuevo" class="btn">Hacer otro test</a>
-      <a href="/" class="btn secundario">Volver al inicio</a>
+      <a href="/" class="btn secundario">Volver al panel</a>
     </div>
   </div>
 </body>

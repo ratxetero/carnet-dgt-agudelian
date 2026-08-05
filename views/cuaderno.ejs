@@ -4,75 +4,80 @@
 <body>
   <%- include('partials/nav') %>
   <div class="container-ancho">
-    <div class="flex-between">
-      <div>
-        <h1>Cuaderno</h1>
-        <p class="text-muted" style="margin:0;">Tus notas de estudio, en un solo lugar.</p>
-      </div>
+
+    <div class="cabecera-alumno">
+      <span class="rol">Notas</span>
+      <h1>Cuaderno</h1>
+    </div>
+
+    <div class="flex-between" style="margin-bottom:14px;">
+      <p class="text-muted" style="margin:0;">Tus notas de estudio, en un solo lugar.</p>
       <a href="/cuaderno/nueva" class="btn"><i data-lucide="plus" class="icon"></i> Nueva nota</a>
     </div>
 
-    <form method="GET" action="/cuaderno" class="card mt-2">
+    <form method="GET" action="/cuaderno" class="card">
       <div class="filtros-cuaderno">
-        <select name="tema">
+        <select name="tema" aria-label="Tema">
           <option value="">Todos los temas</option>
           <% temas.forEach(function(t){ %>
             <option value="<%= t.id %>" <%= String(qs.tema) === String(t.id) ? 'selected' : '' %>>Tema <%= t.numero %> — <%= t.nombre %></option>
           <% }) %>
         </select>
-        <select name="categoria">
+        <select name="categoria" aria-label="Categoría">
           <option value="">Todas las categorías</option>
           <% categorias.forEach(function(c){ %>
             <option value="<%= c %>" <%= qs.categoria === c ? 'selected' : '' %>><%= c %></option>
           <% }) %>
         </select>
-        <select name="etiqueta">
+        <select name="etiqueta" aria-label="Etiqueta">
           <option value="">Todas las etiquetas</option>
           <% etiquetas.forEach(function(e){ %>
             <option value="<%= e %>" <%= qs.etiqueta === e ? 'selected' : '' %>><%= e %></option>
           <% }) %>
         </select>
-        <select name="origen">
+        <select name="origen" aria-label="Origen">
           <option value="">Manual + IA</option>
           <option value="manual" <%= qs.origen === 'manual' ? 'selected' : '' %>>Solo manuales</option>
-          <option value="ia" <%= qs.origen === 'ia' ? 'selected' : '' %>>Solo del asistente IA</option>
+          <option value="ia" <%= qs.origen === 'ia' ? 'selected' : '' %>>Solo del asistente</option>
         </select>
-        <select name="orden">
+        <select name="orden" aria-label="Orden">
           <option value="recientes" <%= filtros.orden === 'recientes' ? 'selected' : '' %>>Más recientes</option>
           <option value="antiguas" <%= filtros.orden === 'antiguas' ? 'selected' : '' %>>Más antiguas</option>
           <option value="alfabetico" <%= filtros.orden === 'alfabetico' ? 'selected' : '' %>>Alfabético</option>
           <option value="tema" <%= filtros.orden === 'tema' ? 'selected' : '' %>>Por tema</option>
           <option value="categoria" <%= filtros.orden === 'categoria' ? 'selected' : '' %>>Por categoría</option>
         </select>
-        <button type="submit" class="btn secundario">Filtrar</button>
-        <% if (Object.keys(qs).length) { %><a href="/cuaderno" class="btn secundario">Limpiar</a><% } %>
+        <button type="submit" class="btn secundario"><i data-lucide="filter" class="icon"></i> Filtrar</button>
+        <% if (Object.keys(qs).length) { %><a href="/cuaderno" class="btn fantasma">Limpiar</a><% } %>
       </div>
     </form>
 
     <% if (!notas.length) { %>
-      <div class="estado-vacio mt-2">
+      <div class="estado-vacio">
         <div class="icono-vacio"><i data-lucide="notebook-text" class="icon-lg"></i></div>
         <h3>Todavía no tienes notas<% if (Object.keys(qs).length) { %> con estos filtros<% } %></h3>
         <p>Guarda ideas mientras haces tests, o crea una nota suelta para repasar más tarde.</p>
         <a href="/cuaderno/nueva" class="btn">Crear tu primera nota</a>
       </div>
     <% } else { %>
-      <div class="grid mt-2">
+      <div class="grid">
         <% notas.forEach(function(n){ %>
-          <a href="/cuaderno/<%= n.id %>" class="card nota-card <%= n.origen === 'ia' ? 'origen-ia' : '' %>" style="display:block; text-decoration:none; color:inherit;">
-            <div class="flex-between" style="align-items:flex-start;">
+          <a href="/cuaderno/<%= n.id %>" class="card nota-card <%= n.origen === 'ia' ? 'origen-ia' : '' %>">
+            <div class="flex-between" style="align-items:flex-start; margin-bottom:4px;">
               <h3 style="margin:0;"><%= n.titulo || 'Nota sin título' %></h3>
               <span class="badge <%= n.origen === 'ia' ? 'ia' : 'neutro' %>"><%= n.origen === 'ia' ? 'IA' : (n.origen === 'mixta' ? 'Mixta' : 'Manual') %></span>
             </div>
-            <p class="text-muted" style="margin:6px 0 10px; -webkit-line-clamp:3; display:-webkit-box; -webkit-box-orient:vertical; overflow:hidden;"><%= n.contenido %></p>
             <% if (n.pregunta_imagen) { %>
-              <img src="/images/preguntas/<%= n.pregunta_imagen %>" alt="" style="width:100%; max-height:120px; object-fit:cover; border-radius:8px; margin-bottom:8px;" />
+              <img src="/images/preguntas/<%= n.pregunta_imagen %>" alt="" style="width:100%; max-height:120px; object-fit:cover; border:2px solid var(--border-soft); margin-bottom:9px;" />
             <% } %>
-            <% if (n.tema_numero) { %><span class="etiqueta-pill">Tema <%= n.tema_numero %></span><% } %>
-            <% if (n.categoria) { %><span class="etiqueta-pill"><%= n.categoria %></span><% } %>
-            <% (n.etiquetas || '').split(',').map(t=>t.trim()).filter(Boolean).forEach(function(t){ %>
-              <span class="etiqueta-pill">#<%= t %></span>
-            <% }) %>
+            <p class="text-muted" style="margin:0 0 10px; -webkit-line-clamp:3; display:-webkit-box; -webkit-box-orient:vertical; overflow:hidden;"><%= n.contenido %></p>
+            <div>
+              <% if (n.tema_numero) { %><span class="etiqueta-pill">Tema <%= n.tema_numero %></span><% } %>
+              <% if (n.categoria) { %><span class="etiqueta-pill"><%= n.categoria %></span><% } %>
+              <% (n.etiquetas || '').split(',').map(t=>t.trim()).filter(Boolean).forEach(function(t){ %>
+                <span class="etiqueta-pill">#<%= t %></span>
+              <% }) %>
+            </div>
             <div class="text-muted mt-1" style="font-size:0.78rem;"><%= n.actualizado_en %></div>
           </a>
         <% }) %>

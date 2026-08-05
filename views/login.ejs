@@ -3,20 +3,25 @@
 <head><%- include('partials/head', { titulo: 'Iniciar sesión' }) %></head>
 <body>
   <%- include('partials/nav') %>
-  <div class="auth-shell">
-    <div class="auth-imagen-panel">
-      <img src="/images/marca/gato-aprobado.png" alt="Gato conduciendo un coche rojo con gafas de sol" />
-      <div class="auth-imagen-texto">
-        <span class="eyebrow" style="color:rgba(255,255,255,0.75);">Test teórico Alejandro</span>
+  <div class="container" style="max-width:520px;">
+    <div class="auth-columna">
+
+      <div class="auth-marquesina">
+        <span class="titulo">Test teórico<br />Alejandro</span>
+        <span class="sub">Permiso B · DGT</span>
       </div>
-    </div>
-    <div class="auth-form-panel">
+
       <form class="form-auth" method="POST" action="/login">
-        <h1>Iniciar sesión</h1>
+        <div class="moneda">
+          <div class="ranura"></div>
+          <span class="texto">Inserta moneda</span>
+        </div>
+
         <% if (errores && errores.length) { %>
           <div class="errores"><i data-lucide="alert-circle" class="icon-sm" style="margin-top:2px;"></i><div><% errores.forEach(function(e){ %><div><%= e %></div><% }) %></div></div>
         <% } %>
         <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
+
         <div class="campo">
           <label for="username">Usuario o email</label>
           <input type="text" id="username" name="username" value="<%= valores.username || '' %>" required autofocus />
@@ -25,9 +30,11 @@
           <label for="password">Contraseña</label>
           <input type="password" id="password" name="password" required />
         </div>
-        <button type="submit" class="btn grande"><i data-lucide="log-in" class="icon"></i> Entrar</button>
-        <p class="text-muted mt-2">¿No tienes cuenta? <a href="/register">Regístrate aquí</a>.</p>
+
+        <button type="submit" class="btn grande mt-1"><i data-lucide="log-in" class="icon"></i> Entrar</button>
       </form>
+
+      <p class="auth-pie">¿No tienes cuenta? <a href="/register">Crear cuenta</a></p>
     </div>
   </div>
 </body>

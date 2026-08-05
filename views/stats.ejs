@@ -4,8 +4,9 @@
 <body>
   <%- include('partials/nav') %>
   <div class="container-ancho">
-    <div class="mt-1" style="margin-bottom:14px;">
-      <div class="eyebrow">Progreso</div>
+
+    <div class="cabecera-alumno">
+      <span class="rol">Progreso</span>
       <h1>Estadísticas</h1>
     </div>
 
@@ -13,8 +14,8 @@
 
     <div class="estado-vacio" id="stats-vacio" style="display:none;">
       <div class="icono-vacio"><i data-lucide="bar-chart-3" class="icon-lg"></i></div>
-      <h3>Todavía no hay estadísticas suficientes</h3>
-      <p>En cuanto termines tu primer test (de cualquier tipo: aleatorio, por tema, simulacro o repaso), aquí verás tu progreso con gráficos.</p>
+      <h3>Aún no hay datos suficientes</h3>
+      <p>En cuanto termines tu primer test (aleatorio, por tema, simulacro o repaso) aquí verás tu progreso.</p>
       <a href="/test/nuevo" class="btn">Hacer mi primer test</a>
     </div>
 
@@ -34,7 +35,7 @@
 
       <div class="card">
         <h2>Aciertos por tema</h2>
-        <p class="text-muted" style="margin-top:-4px;">"T0" corresponde a las preguntas sin categorizar.</p>
+        <p class="text-muted" style="margin-top:-2px;">"T0" son las preguntas sin categorizar.</p>
         <div class="chart-wrap"><canvas id="chart-temas" height="120"></canvas></div>
       </div>
 
@@ -42,7 +43,7 @@
         <h2>Simulacros oficiales</h2>
         <div style="overflow-x:auto;">
         <table class="tabla-simple" id="tabla-oficiales">
-          <thead><tr><th>Simulacro</th><th>Intentos</th><th>Mejor resultado</th><th>¿Aprobado?</th></tr></thead>
+          <thead><tr><th>Simulacro</th><th>Intentos</th><th>Mejor resultado</th><th>Apto</th></tr></thead>
           <tbody></tbody>
         </table>
         </div>

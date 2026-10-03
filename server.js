@@ -5,9 +5,10 @@
 //   2. Solo entonces, requerir ./app.js (que abre la conexión a
 //      better-sqlite3 y monta todas las rutas).
 //   3. Arrancar el servidor HTTP.
-//   4. Programar copias de seguridad periódicas y una última copia al
-//      recibir la señal de apagado (Render la envía antes de cada
-//      redeploy/reinicio, así que esto es lo que evita perder datos).
+//   4. Programar copias periódicas y una última copia al apagar. Además,
+//      app.js sube una copia a los pocos segundos de cada cambio
+//      (backupService.middlewareRespaldo), que es lo que de verdad evita
+//      perder progreso cuando Render duerme o reinicia el servicio.
 //
 // Si no tienes Turso configurado (TURSO_DATABASE_URL/TURSO_AUTH_TOKEN en
 // tu .env), todo esto es un no-op silencioso: la app arranca exactamente

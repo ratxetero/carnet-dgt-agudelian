@@ -67,6 +67,10 @@ app.use(
   })
 );
 
+// Tras cada petición que modifica datos (responder, finalizar test, notas,
+// registro...), sube una copia a Turso a los pocos segundos.
+app.use(backupService.middlewareRespaldo);
+
 app.use(attachUser);
 app.use((req, res, next) => { res.locals.rutaActual = req.path; next(); });
 app.use(ensureCsrfToken);

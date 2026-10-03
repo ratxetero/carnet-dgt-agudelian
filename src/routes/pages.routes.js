@@ -93,7 +93,7 @@ router.get('/respaldar-ahora', requireAuth, async (req, res) => {
     `);
   }
   try {
-    await backupService.respaldar();
+    await backupService.respaldar({ forzar: true });
     res.send(`
       <!DOCTYPE html><html><body style="font-family:sans-serif; max-width:480px; margin:60px auto; text-align:center;">
         <h1 style="color:#4a7a52;">✅ Copia de seguridad completada</h1>
